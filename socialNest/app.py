@@ -12,13 +12,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-import pymysql
-pymysql.install_as_MySQLdb()
+# import pymysql
+# pymysql.install_as_MySQLdb()
 
 
 local_server = True
 app=Flask(__name__)
-app.secret_key="=Soyebahmed@123"
 
 
 login_manager = LoginManager()
@@ -32,16 +31,15 @@ login_manager.login_view = "login"
 
 
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-    "DATABASE_URL",
-    "mysql+pymysql://root:@localhost/socialmedia"
-)
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 
-app.secret_key = os.getenv(
-    "SECRET_KEY",
-    "SoyebAhmedLocalSecret"
-)
+app.secret_key = os.getenv("SECRET_KEY")
+
+
 db = SQLAlchemy(app)
+
+
+
 
 # Configuration for handling files
 app.config['UPLOAD_FOLDER']='static/uploads/'
@@ -64,8 +62,8 @@ class Signup(UserMixin, db.Model):
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50))
     email = db.Column(db.String(100),unique=True)
-    password = db.Column(db.String(100))
-    phone = db.Column(db.Integer,unique=True)
+    password = db.Column(db.String(255))
+    phone = db.Column(db.String(10),unique=True)
     profileimage = db.Column(db.String(500))
     
     def get_id(self):
@@ -115,6 +113,12 @@ class Like(db.Model):
         db.UniqueConstraint('user_id', 'post_id', name='unique_like'),
     ) 
     
+    
+# TEMP
+with app.app_context():
+    db.create_all()
+
+    
 @app.route("/")
 def index():
     if not current_user.is_authenticated:
@@ -133,7 +137,7 @@ def signup():
         firstName=request.form.get("fname")
         lastName=request.form.get("lname")
         email=request.form.get("email")
-        phoneNumber=request.form.get("phone")
+        phoneNumber=request.form.get("phone","").strip()
         password=request.form.get("pass1")
         confirmPassword=request.form.get("pass2")
         print(firstName,lastName,email,phoneNumber,password,confirmPassword)
@@ -147,16 +151,23 @@ def signup():
             flash("User already exists","warning")
             return redirect(url_for('signup'))
         
-        if len(phoneNumber) !=10:
-            flash("Phone number must be 10 digits","warning")
-            return redirect(url_for('signup'))
-            
+        if len(phoneNumber) != 10 or not phoneNumber.isdigit():
+            flash("Phone number must be exactly 10 digits", "warning")
+            return redirect(url_for("signup"))
+                    
         gen_pass=generate_password_hash(password)    
-        query = f"INSERT into `signup` (`first_name`,`last_name`,`email`,`password`,`phone`) VALUES ('{firstName}','{lastName}','{email}','{gen_pass}','{phoneNumber}')"
-        with db.engine.begin() as conn:
-            conn.exec_driver_sql(query)
-            flash("Signup successful !.","success")
-            return redirect(url_for('login'))
+        new_user = Signup(
+                            first_name=firstName,
+                            last_name=lastName,
+                            email=email,
+                            password=gen_pass,
+                            phone=phoneNumber
+                        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("Signup successful !.", "success")
+        return redirect(url_for("login"))
             
     return render_template("signup.html")
 
@@ -338,12 +349,12 @@ def remove(ids):
     d1 = Friends.query.filter_by(user_id=data[1]).first()
     d2 = Friends.query.filter_by(requested_id=data[0]).first()
     if d1 or d2:
-        query = f"DELETE FROM `friends` WHERE `friends`.`user_id` = {data[1]} AND `friends`.`requested_id` = {data[0]}"
-        with db.engine.begin() as conn:
-            conn.exec_driver_sql(query)
-            flash("Request Cancelled", "success")
-            return render_template("connect.html",users=users)
-    return render_template("connect.html",users=users)
+        friend_request = Friends.query.filter_by(user_id=data[1],requested_id=data[0]).first()
+        if friend_request:
+            db.session.delete(friend_request)
+            db.session.commit()
+        flash("Request Cancelled", "success")
+        return render_template("connect.html", users=users)
      
      
 @app.route("/profile",methods=['GET','POST'])
@@ -368,49 +379,58 @@ def editprofile(id):
     userdata = Signup.query.filter_by(user_id=id).first()
     return render_template("editprofile.html",userdata=userdata)
 
-@app.route("/updateprofile/<int:id>",methods=["GET",'POST'])
+@app.route("/updateprofile/<int:id>", methods=["GET", "POST"])
 def updateprofile(id):
     userdata = Signup.query.filter_by(email=current_user.email).first()
-    if request.method == 'POST':
-        firstName = request.form.get("fname")
-        lastName=request.form.get("lname")
-        email=request.form.get("email")
-        phoneNumber=request.form.get("phone")
-        file = request.files['profileimage']
-        if len(phoneNumber) != 10:
-            flash("Please Enter 10 digit number")
+
+    if request.method == "POST":
+        firstName = request.form.get("fname", "").strip()
+        lastName = request.form.get("lname", "").strip()
+        email = request.form.get("email", "").strip()
+        phoneNumber = request.form.get("phone", "").strip()
+        file = request.files.get("profileimage")
+
+        if len(phoneNumber) != 10 or not phoneNumber.isdigit():
+            flash("Please enter a 10 digit number", "warning")
             return redirect(url_for("profile"))
-        if file and allowed_file(file.filename):
-             # Save the file in the uploads folder
+
+        # Update basic profile information
+        userdata.first_name = firstName
+        userdata.last_name = lastName
+        userdata.email = email
+        userdata.phone = phoneNumber
+
+        # Update profile image if a new one was uploaded
+        if file and file.filename and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-            
-            query = f"UPDATE `signup` SET `first_name` = '{firstName}' , `last_name` = '{lastName}', `email` = '{email}', `phone` = '{phoneNumber}', `profileimage` = '{file.filename}' WHERE `signup`.`user_id`={id}"
-            
-            with db.engine.begin() as conn:
-                conn.exec_driver_sql(query)
-                flash("Profile Update Success","success")
-                return redirect(url_for("profile"))
-            
-        else:
-            query1 = f"UPDATE `signup` SET `first_name` = '{firstName}' , `last_name` = '{lastName}', `email` = '{email}', `phone` = '{phoneNumber}' WHERE `signup`.`user_id`={id}"
-            
-            with db.engine.begin() as conn:
-                conn.exec_driver_sql(query1)
-                flash("Profile Update Success","success")
-                return redirect(url_for("profile"))
-    return render_template("profile.html",userdata=userdata)       
+            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+            userdata.profileimage = filename
 
+        db.session.commit()
 
-@app.route("/accept/<path:ids>", methods=['GET'])
-def acceptfriendrequest(ids):
-   
-    data = ids.split("/")
-    query = f"UPDATE `friends` SET `isAccepted` = 'True' WHERE `friends`.`requested_id` = '{ data[0] }' and `friends`.`user_id` = '{ data[1] }'"
-    with db.engine.begin() as conn:
-        conn.exec_driver_sql(query)
-        flash("Friend Request Accepted","success")
+        flash("Profile Update Success", "success")
         return redirect(url_for("profile"))
+
+    return render_template("profile.html", userdata=userdata) 
+
+
+@app.route("/accept/<path:ids>", methods=["GET"])
+def acceptfriendrequest(ids):
+    data = ids.split("/")
+
+    friend_request = Friends.query.filter_by(
+        requested_id=data[0],
+        user_id=data[1]
+    ).first()
+
+    if friend_request:
+        friend_request.isAccepted = "True"
+        db.session.commit()
+        flash("Friend Request Accepted", "success")
+    else:
+        flash("Friend request not found", "warning")
+
+    return redirect(url_for("profile"))
     
 
 
