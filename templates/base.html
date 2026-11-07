@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#6658e8" />
+    <meta name="description" content="SocialNest — connect, share and grow with your community." />
+    <title>{% block title %}Home{% endblock %} · SocialNest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="/static/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/static/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" />
+    <link href="/static/assets/css/main.css" rel="stylesheet" />
+  </head>
+  <body class="socialnest-app home-page">
+    <header id="header" class="header app-header">
+      <div class="app-nav container-fluid container-xl">
+        <a href="/" class="brand" aria-label="SocialNest home"><span class="brand-mark"><i class="bi bi-people-fill"></i></span><span>Social<span>Nest</span></span></a>
+        <nav id="navmenu" class="navmenu app-navmenu" aria-label="Main navigation">
+          <ul>
+            <li><a class="active" href="/">Home</a></li><li><a href="/posts">Create post</a></li><li><a href="/connect">Discover</a></li>
+            {% if current_user.is_authenticated %}
+            <li><a href="/profile">My profile</a></li><li class="nav-user"><span class="nav-avatar">{{ current_user.first_name[:1]|upper }}</span><span>Hi, {{ current_user.first_name }}</span></li><li><a class="nav-logout" href="/logout">Log out</a></li>
+            {% else %}
+            <li><a href="/about">About</a></li><li><a class="nav-login" href="/login">Log in</a></li><li><a class="nav-cta" href="/signup">Join SocialNest</a></li>
+            {% endif %}
+          </ul>
+          <button class="mobile-nav-toggle d-xl-none" type="button" aria-label="Toggle navigation" aria-expanded="false"><i class="bi bi-list"></i></button>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="home-hero">
+        <div class="container home-hero-inner">
+          <div class="home-hero-copy">
+            <span class="eyebrow"><span class="eyebrow-dot"></span> A COMMUNITY THAT FEELS LIKE HOME</span>
+            <h1>Good things happen when we <span>connect.</span></h1>
+            <p>Share what matters, find your people and turn everyday moments into meaningful connections.</p>
+            <div class="hero-actions"><a href="/posts" class="btn-primary-soft">Share a moment <i class="bi bi-arrow-up-right"></i></a><a href="/connect" class="btn-quiet">Discover people <i class="bi bi-arrow-right"></i></a></div>
+            <div class="hero-proof"><div class="proof-avatars"><span>S</span><span>N</span><span>+</span></div><span>A space for real conversations and new friendships.</span></div>
+          </div>
+          <div class="home-hero-art"><div class="hero-art-glow"></div><div class="hero-art-card hero-art-main"><div class="art-card-top"><span class="art-dot"></span><span class="art-dot"></span><span class="art-dot"></span><span class="art-card-label">YOUR COMMUNITY</span></div><div class="art-people"><span class="art-person person-one"><i class="bi bi-person-fill"></i></span><span class="art-person person-two"><i class="bi bi-person-fill"></i></span><span class="art-person person-three"><i class="bi bi-person-fill"></i></span><span class="art-person person-four"><i class="bi bi-person-fill"></i></span></div><div class="art-message"><span class="message-icon"><i class="bi bi-chat-heart-fill"></i></span><div><strong>Stay in the loop</strong><small>Little moments bring us together.</small></div><i class="bi bi-arrow-up-right ms-auto"></i></div></div><div class="floating-note note-top"><i class="bi bi-heart-fill"></i> Share a little joy</div><div class="floating-note note-bottom"><i class="bi bi-stars"></i> Find your people</div></div>
+        </div>
+        <div class="hero-bottom-wave"></div>
+      </section>
+      <section class="feed-section"><div class="container feed-container">{% block body %}{% endblock body %}</div></section>
+    </main>
+    <footer class="app-footer"><div class="container"><span>© 2026 <strong>SocialNest</strong></span><span>Made for meaningful connections.</span><a href="/about">About the community</a></div></footer>
+    <script src="/static/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/assets/js/main.js"></script>
+  </body>
+</html>

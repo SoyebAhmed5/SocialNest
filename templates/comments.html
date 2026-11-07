@@ -1,0 +1,7 @@
+{% extends "auth.html" %}
+{% block title %}Comments{% endblock %}
+{% block page_heading %}Every thought adds <span>something.</span>{% endblock %}
+{% block page_subheading %}See what the community has to say.{% endblock %}
+{% block forms %}<div class="form-card wide-form-card"><div class="form-card-heading"><span class="form-icon"><i class="bi bi-chat-left-text"></i></span><div><h2>Conversation</h2><p>Community comments</p></div></div>{% include 'messages.html' %}
+{% if post|length == 0 %}<div class="empty-state compact-empty"><span class="empty-icon"><i class="bi bi-chat-square"></i></span><h3>No comments yet</h3><p>Start the conversation from the community feed.</p><a href="/" class="btn-primary-soft">Back to feed</a></div>{% endif %}
+<div class="comment-list">{% for p in post %}<article class="comment-item"><div class="comment-avatar">{{ (p.commentedBy or 'S')[:1]|upper }}</div><div class="comment-body"><div class="comment-meta"><strong>{{ p.commentedBy }}</strong><span>{{ p.commentedOn }}</span></div><p>{{ p.comment }}</p></div></article>{% endfor %}</div><a href="/" class="back-link"><i class="bi bi-arrow-left"></i> Back to community feed</a></div>{% endblock forms %}

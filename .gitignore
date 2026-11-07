@@ -1,22 +1,16 @@
-/frontend
-/socialmedia/static/assets/img/gallery
-/socialmedia/static/assets/img/team
-
-/socialmedia/static/assets/scss
-
-
-myenv/
-
-__pycache__/
-*.pyc
-
+# Environment and secrets
 .env
+.env.*
+!.env.example
 
-instance/
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
 
-*.db
-
-.vscode/
-
+# Local uploads (keep the directory placeholder)
 static/uploads/*
 !static/uploads/.gitkeep

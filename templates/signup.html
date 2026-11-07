@@ -1,0 +1,15 @@
+{% extends "auth.html" %}
+{% block title %}Create account{% endblock %}
+{% block page_heading %}Your next connection <span>starts here.</span>{% endblock %}
+{% block page_subheading %}Create your account and make room for more good conversations.{% endblock %}
+{% block forms %}
+<div class="form-card"><div class="form-card-heading"><span class="form-icon"><i class="bi bi-person-plus"></i></span><div><h2>Join the community</h2><p>It only takes a minute to get started.</p></div></div>
+{% include 'messages.html' %}
+<form action="/signup" method="post" class="modern-form">
+  <div class="form-row"><div><label for="first-name">First name</label><input id="first-name" class="form-control" type="text" name="fname" placeholder="First name" autocomplete="given-name" required></div><div><label for="last-name">Last name</label><input id="last-name" class="form-control" type="text" name="lname" placeholder="Last name" autocomplete="family-name" required></div></div>
+  <label for="signup-email">Email address</label><input id="signup-email" class="form-control" type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+  <label for="signup-phone">Phone number</label><input id="signup-phone" class="form-control" type="tel" name="phone" placeholder="10-digit phone number" pattern="[0-9]{10}" maxlength="10" autocomplete="tel" required>
+  <div class="form-row"><div><label for="signup-password">Password</label><input id="signup-password" class="form-control" type="password" name="pass1" placeholder="Create password" autocomplete="new-password" required></div><div><label for="confirm-password">Confirm password</label><input id="confirm-password" class="form-control" type="password" name="pass2" placeholder="Repeat password" autocomplete="new-password" required></div></div>
+  <button type="submit" class="btn-submit">Create account <i class="bi bi-arrow-right"></i></button>
+</form><p class="form-switch">Already have an account? <a href="/login">Log in</a></p></div>
+{% endblock forms %}

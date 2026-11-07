@@ -1,0 +1,13 @@
+{% extends "auth.html" %}
+{% block title %}Log in{% endblock %}
+{% block page_heading %}Welcome <span>back.</span>{% endblock %}
+{% block page_subheading %}Pick up where you left off. Your community is right here.{% endblock %}
+{% block forms %}
+<div class="form-card"><div class="form-card-heading"><span class="form-icon"><i class="bi bi-person-check"></i></span><div><h2>Log in to SocialNest</h2><p>Good to see you again.</p></div></div>
+{% include 'messages.html' %}
+<form action="/login" method="post" class="modern-form">
+  <label for="login-email">Email address</label><input id="login-email" class="form-control" type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+  <label for="login-password">Password</label><input id="login-password" class="form-control" type="password" name="pass1" placeholder="Enter your password" autocomplete="current-password" required>
+  <button type="submit" class="btn-submit">Log in <i class="bi bi-arrow-right"></i></button>
+</form><p class="form-switch">New to SocialNest? <a href="/signup">Create an account</a></p></div>
+{% endblock forms %}
