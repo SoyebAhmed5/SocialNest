@@ -1,0 +1,6 @@
+{% extends "auth.html" %}
+{% block title %}Discover people{% endblock %}
+{% block page_heading %}Good people are <span>out there.</span>{% endblock %}
+{% block page_subheading %}Discover members, send a request and grow your SocialNest circle.{% endblock %}
+{% block forms %}{% include 'messages.html' %}<div class="form-card wide-form-card"><div class="form-card-heading"><span class="form-icon"><i class="bi bi-people"></i></span><div><h2>Discover your community</h2><p>Find people to connect with.</p></div></div>
+<div class="member-list">{% for user in users %}<div class="member-row"><div class="member-avatar">{{ user.first_name[:1]|upper }}{{ user.last_name[:1]|upper }}</div><div class="member-info"><strong>{{ user.first_name }} {{ user.last_name }}</strong><small>SocialNest member</small></div><div class="member-actions"><a href="/connectfriend/{{ user.user_id }}/{{ current_user.user_id }}" class="btn-member-add"><i class="bi bi-person-plus"></i> Add</a><a href="/remove/{{ user.user_id }}/{{ current_user.user_id }}" class="btn-member-remove" aria-label="Remove request"><i class="bi bi-x-lg"></i></a></div></div>{% else %}<div class="empty-state compact-empty"><span class="empty-icon"><i class="bi bi-people"></i></span><h3>You're all caught up</h3><p>There are no other members to show right now.</p></div>{% endfor %}</div></div>{% endblock forms %}

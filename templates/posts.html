@@ -1,0 +1,15 @@
+{% extends "auth.html" %}
+{% block title %}Create a post{% endblock %}
+{% block page_heading %}Your story deserves <span>a space.</span>{% endblock %}
+{% block page_subheading %}Share a thought, a photo or a moment with the SocialNest community.{% endblock %}
+{% block forms %}
+<div class="form-card"><div class="form-card-heading"><span class="form-icon"><i class="bi bi-pencil-square"></i></span><div><h2>Create a post</h2><p>What's happening in your world?</p></div></div>
+{% include 'messages.html' %}
+<form action="/posts" method="post" enctype="multipart/form-data" class="modern-form">
+  <input type="hidden" value="{{ current_user.email }}" name="email"><input type="hidden" value="{{ current_user.first_name }} {{ current_user.last_name }}" name="name">
+  <label for="post-title">Post title</label><input id="post-title" class="form-control" type="text" name="title" placeholder="Give your post a title" maxlength="150" required>
+  <label for="post-description">Your story</label><textarea id="post-description" class="form-control" name="description" rows="5" placeholder="Write something worth sharing…" required></textarea>
+  <label for="post-image">Add a photo <span class="optional-label">(optional)</span></label><input id="post-image" class="form-control file-input" type="file" name="image" accept="image/png,image/jpeg,image/gif,image/webp">
+  <button type="submit" class="btn-submit">Share with community <i class="bi bi-send"></i></button>
+</form></div>
+{% endblock forms %}

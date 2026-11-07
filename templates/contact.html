@@ -1,0 +1,5 @@
+{% extends "auth.html" %}
+{% block title %}Contact{% endblock %}
+{% block page_heading %}We're always <span>listening.</span>{% endblock %}
+{% block page_subheading %}Have a question or an idea? Send a note to the SocialNest team.{% endblock %}
+{% block forms %}<div class="form-card"><div class="form-card-heading"><span class="form-icon"><i class="bi bi-envelope-heart"></i></span><div><h2>Get in touch</h2><p>We'd love to hear from you.</p></div></div>{% include 'messages.html' %}<form action="/contact" method="post" class="modern-form"><label for="contact-email">Your email</label><input id="contact-email" class="form-control" type="email" name="email" placeholder="you@example.com" required><label for="contact-message">How can we help?</label><textarea id="contact-message" name="desc" class="form-control" rows="5" placeholder="Tell us what's on your mind…" required></textarea><button type="submit" class="btn-submit">Send message <i class="bi bi-send"></i></button></form></div>{% endblock forms %}

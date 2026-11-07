@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#6658e8" />
+    <meta name="description" content="SocialNest — connect, share and grow with your community." />
+    <title>{% block title %}SocialNest{% endblock %} · SocialNest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="/static/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/static/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" />
+    <link href="/static/assets/css/main.css" rel="stylesheet" />
+  </head>
+  <body class="socialnest-app auth-page">
+    <header id="header" class="header app-header">
+      <div class="app-nav container-fluid container-xl">
+        <a href="/" class="brand" aria-label="SocialNest home"><span class="brand-mark"><i class="bi bi-people-fill"></i></span><span>Social<span>Nest</span></span></a>
+        <nav id="navmenu" class="navmenu app-navmenu" aria-label="Main navigation">
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/posts">Create post</a></li>
+            <li><a href="/connect">Discover</a></li>
+            {% if current_user.is_authenticated %}
+            <li><a href="/profile">My profile</a></li>
+            <li class="nav-user"><span class="nav-avatar">{{ current_user.first_name[:1]|upper }}</span><span>Hi, {{ current_user.first_name }}</span></li>
+            <li><a class="nav-logout" href="/logout">Log out</a></li>
+            {% else %}
+            <li><a href="/about">About</a></li>
+            <li><a class="nav-login" href="/login">Log in</a></li>
+            <li><a class="nav-cta" href="/signup">Join SocialNest</a></li>
+            {% endif %}
+          </ul>
+          <button class="mobile-nav-toggle d-xl-none" type="button" aria-label="Toggle navigation" aria-expanded="false"><i class="bi bi-list"></i></button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="auth-main">
+      <div class="auth-backdrop auth-backdrop-one"></div><div class="auth-backdrop auth-backdrop-two"></div>
+      <div class="container auth-container">
+        <div class="auth-intro">
+          <span class="eyebrow"><span class="eyebrow-dot"></span> YOUR PEOPLE. YOUR SPACE.</span>
+          <h1>{% block page_heading %}A little closer, <span>every day.</span>{% endblock %}</h1>
+          <p>{% block page_subheading %}A welcoming place to share moments, discover people and stay connected.{% endblock %}</p>
+        </div>
+        <div class="auth-content" data-aos="fade-up">
+          {% block forms %}{% endblock forms %}
+        </div>
+        {% block body %}{% endblock body %}
+      </div>
+    </main>
+
+    <footer class="app-footer"><div class="container"><span>© 2026 <strong>SocialNest</strong></span><span>Made for meaningful connections.</span></div></footer>
+    <script src="/static/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/assets/js/main.js"></script>
+  </body>
+</html>
