@@ -2285,3 +2285,295 @@ html, body { max-width: 100%; overflow-x: hidden; }
     padding: 15px;
   }
 }
+
+
+/* ==========================================================
+   SocialNest profile page — standalone responsive layout
+   ========================================================== */
+.profile-page-body {
+  margin: 0;
+  background: #f6f5fc;
+}
+.profile-page-body .app-header {
+  position: sticky;
+  top: 0;
+  z-index: 5000;
+  overflow: visible;
+}
+.profile-page {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 145px);
+  padding: clamp(30px, 5vw, 64px) 0 72px;
+  background:
+    radial-gradient(circle at 85% 8%, rgba(151,139,255,.25), transparent 28%),
+    linear-gradient(135deg, #29244f 0%, #403879 50%, #6155bd 100%);
+}
+.profile-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: .12;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255,255,255,.8) .7px, transparent .7px);
+  background-size: 19px 19px;
+}
+.profile-shell {
+  width: min(1120px, calc(100% - 48px));
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+}
+.profile-intro {
+  max-width: 760px;
+  margin: 0 auto 2px;
+  text-align: center;
+  color: #fff;
+}
+.profile-intro h1 {
+  margin: 14px 0 12px;
+  color: #fff;
+  font: 800 clamp(30px, 4vw, 46px)/1.15 "Manrope", sans-serif;
+  letter-spacing: -.045em;
+}
+.profile-intro h1 span { color: #bdb5ff; }
+.profile-intro p {
+  margin: 0;
+  color: rgba(255,255,255,.76);
+  font-size: clamp(14px, 1.5vw, 17px);
+  line-height: 1.7;
+}
+.profile-page .profile-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+  padding: clamp(20px, 3vw, 30px);
+  border: 1px solid rgba(255,255,255,.8);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(17,14,54,.16);
+}
+.profile-page .profile-large-avatar {
+  display: block;
+  flex: 0 0 88px;
+  width: 88px;
+  height: 88px;
+  margin: 0;
+  border: 5px solid #f0eeff;
+  border-radius: 25px;
+  object-fit: cover;
+  background: #f1efff;
+}
+.profile-page .profile-summary-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.profile-page .profile-summary-info h2 {
+  margin: 5px 0 8px;
+  color: #20213b;
+  font: 800 clamp(20px, 2.2vw, 25px)/1.2 "Manrope", sans-serif;
+  overflow-wrap: anywhere;
+}
+.profile-page .profile-summary-info p {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 4px 0;
+  color: #85869a;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.profile-page .profile-summary-info p i {
+  flex: 0 0 auto;
+  width: 16px;
+  color: #6658e8;
+}
+.profile-page .profile-kicker {
+  color: #6658e8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+.profile-page .profile-edit-btn {
+  flex: 0 0 auto;
+  min-height: 48px;
+  white-space: nowrap;
+}
+.profile-page .profile-panel {
+  width: 100%;
+  min-width: 0;
+  padding: clamp(20px, 3vw, 34px);
+  border: 1px solid rgba(255,255,255,.7);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(17,14,54,.12);
+}
+.profile-page .section-heading-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 22px;
+}
+.profile-page .section-heading-row > div { min-width: 0; }
+.profile-page .section-heading-row .eyebrow {
+  color: #7569f0;
+  font-size: 10px;
+  letter-spacing: .16em;
+  font-weight: 800;
+}
+.profile-page .section-heading-row h2 {
+  margin: 6px 0 0;
+  color: #20213b;
+  font: 800 clamp(21px, 2.5vw, 27px)/1.2 "Manrope", sans-serif;
+  overflow-wrap: anywhere;
+}
+.profile-page .section-heading-row h2 span { color: #6658e8; }
+.profile-page .text-link {
+  flex: 0 0 auto;
+  color: #6658e8;
+  font-size: 12px;
+  font-weight: 800;
+}
+.profile-page .request-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  min-width: 0;
+}
+.profile-page .request-card {
+  min-width: 0;
+  padding: 20px 14px;
+  border: 1px solid #e9e7f8;
+  border-radius: 17px;
+  background: #fff;
+}
+.profile-page .empty-state {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  border: 1px dashed #d9d5ff;
+  border-radius: 20px;
+  background: #fff;
+  text-align: center;
+}
+.profile-page .empty-state h3 { margin: 12px 0 4px; color: #20213b; font-size: 17px; }
+.profile-page .empty-state p { margin: 0; color: #85869a; font-size: 13px; }
+.profile-page .feed-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 20px;
+  min-width: 0;
+}
+.profile-page .post-card {
+  min-width: 0;
+  width: 100%;
+  padding: clamp(16px, 2vw, 22px);
+  border: 1px solid #e9e7f8;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 8px 26px rgba(38,34,85,.045);
+}
+.profile-page .post-copy,
+.profile-page .post-author,
+.profile-page .post-stats,
+.profile-page .post-actions,
+.profile-page .comment-form { min-width: 0; }
+.profile-page .post-copy h3,
+.profile-page .post-copy p { overflow-wrap: anywhere; }
+.profile-page .comment-form input { min-width: 0; }
+.profile-page .post-image { max-width: 100%; height: auto; object-fit: contain; }
+.profile-page .profile-panel .empty-state { grid-column: 1 / -1; }
+.profile-page-body .app-footer { background: #fff; }
+
+@media (max-width: 760px) {
+  .profile-shell { width: min(100% - 28px, 600px); gap: 18px; }
+  .profile-page { padding: 30px 0 44px; }
+  .profile-page .profile-summary-card { flex-wrap: wrap; gap: 13px; padding: 17px; }
+  .profile-page .profile-large-avatar { flex-basis: 74px; width: 74px; height: 74px; border-radius: 22px; }
+  .profile-page .profile-summary-info { flex: 1 1 calc(100% - 90px); }
+  .profile-page .profile-edit-btn { flex: 1 1 100%; width: 100%; justify-content: center; }
+  .profile-page .profile-panel { padding: 19px 16px; border-radius: 20px; }
+  .profile-page .request-grid,
+  .profile-page .feed-grid { grid-template-columns: minmax(0, 1fr); }
+  .profile-page .section-heading-row { align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .profile-page .section-heading-row > a { max-width: 100%; }
+}
+@media (max-width: 420px) {
+  .profile-shell { width: calc(100% - 22px); }
+  .profile-page .profile-summary-info h2 { font-size: 18px; }
+  .profile-page .profile-summary-info p { font-size: 12px; }
+  .profile-page .post-card { padding: 15px; }
+}
+
+/* Mobile menu is fixed to the viewport so no ancestor can clip it. */
+@media (max-width: 1199px) {
+  .socialnest-app .app-header { position: sticky !important; top: 0; z-index: 5000 !important; overflow: visible !important; }
+  .socialnest-app .app-nav { position: relative !important; min-height: 68px; }
+  .socialnest-app .app-navmenu { position: static !important; display: flex !important; align-items: center; justify-content: flex-end; }
+  .socialnest-app .app-navmenu > .mobile-nav-toggle {
+    display: inline-flex !important;
+    width: 46px; height: 46px; align-items: center; justify-content: center;
+    margin: 0; padding: 0; border: 1px solid #e9e7f8; border-radius: 13px;
+    background: #f7f6ff; color: #5143d2 !important; font-size: 25px; line-height: 1;
+    position: relative; z-index: 5002; cursor: pointer;
+  }
+  .socialnest-app .app-navmenu > ul {
+    display: none !important;
+    position: fixed !important;
+    top: 78px !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    left: auto !important;
+    inset: 78px max(12px, env(safe-area-inset-right)) auto auto !important;
+    width: min(360px, calc(100vw - 24px)) !important;
+    max-height: calc(100dvh - 98px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 4px !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    border: 1px solid #e9e7f8 !important;
+    border-radius: 18px !important;
+    background: #fff !important;
+    box-shadow: 0 22px 55px rgba(31,27,78,.2) !important;
+    z-index: 5001 !important;
+  }
+  .socialnest-app .app-navmenu.is-open > ul,
+  .socialnest-app .app-navmenu > ul.navmenu-active { display: flex !important; }
+  .socialnest-app .app-navmenu > ul > li {
+    display: flex !important; width: 100%; min-width: 0; padding: 0 !important;
+  }
+  .socialnest-app .app-navmenu > ul > li > a {
+    display: flex; width: 100%; min-height: 44px; align-items: center;
+    justify-content: flex-start; padding: 11px 13px !important;
+    border-radius: 10px; color: #55566e !important; font-size: 14px !important;
+    white-space: normal;
+  }
+  .socialnest-app .app-navmenu .nav-user {
+    display: flex !important; min-height: 44px; padding: 9px 13px !important;
+    border-top: 1px solid #f0eff7; color: #55566e;
+  }
+  .socialnest-app .app-navmenu .nav-logout-form { width: 100%; }
+  .socialnest-app .app-navmenu .nav-logout {
+    display: flex; width: 100%; min-height: 44px; align-items: center;
+    padding: 11px 13px; border-radius: 10px; text-align: left;
+  }
+}
+@media (min-width: 1200px) {
+  .socialnest-app .app-navmenu > .mobile-nav-toggle { display: none !important; }
+  .socialnest-app .app-navmenu > ul { display: flex !important; }
+}

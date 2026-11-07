@@ -1,12 +1,124 @@
-{% extends "auth.html" %}
-{% block title %}My profile{% endblock %}
-{% block auth_main_class %}profile-main{% endblock auth_main_class %}
-{% block page_heading %}Your corner of <span>SocialNest.</span>{% endblock %}
-{% block page_subheading %}Your profile, your connections and everything you've shared.{% endblock %}
-{% block forms %}<div class="profile-summary-card">{% if userdata.profileimage %}<img src="{{ upload_url(userdata.profileimage) }}" alt="Profile picture" class="profile-large-avatar" onerror="this.onerror=null;this.src='{{ url_for('static', filename='assets/img/default-profile.jpg') }}';">{% else %}<img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}" alt="Default profile picture" class="profile-large-avatar" onerror="this.onerror=null;this.src='{{ url_for('static', filename='assets/img/default-profile.jpg') }}';">{% endif %}<div class="profile-summary-info"><span class="profile-kicker">YOUR PROFILE</span><h2>{{ userdata.first_name }} {{ userdata.last_name }}</h2><p><i class="bi bi-envelope"></i> {{ userdata.email }}</p><p><i class="bi bi-telephone"></i> {{ userdata.phone }}</p></div><a href="/editprofile/{{ userdata.user_id }}" class="btn-primary-soft profile-edit-btn"><i class="bi bi-pencil"></i> Edit profile</a></div>{% include 'messages.html' %}{% endblock forms %}
-{% block body %}
-<section class="profile-section profile-requests-section"><div class="section-heading-row"><div><span class="eyebrow">YOUR COMMUNITY</span><h2>Friend requests <span>({{ myids|length }})</span></h2></div><a href="/connect" class="text-link">Discover people <i class="bi bi-arrow-right"></i></a></div>
-<div class="request-grid">{% for friend in myids %}<article class="request-card">{% if friend.profileimage %}<img src="{{ upload_url(friend.profileimage) }}" alt="{{ friend.first_name }}" class="request-avatar" onerror="this.onerror=null;this.src='{{ url_for('static', filename='assets/img/default-profile.jpg') }}';">{% else %}<img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}" alt="Default profile" class="request-avatar" onerror="this.onerror=null;this.src='{{ url_for('static', filename='assets/img/default-profile.jpg') }}';">{% endif %}<strong>{{ friend.first_name }} {{ friend.last_name }}</strong><small>Sent you a friend request</small><div class="request-actions"><form action="/accept/{{ friend.user_id }}" method="post"><button type="submit" class="btn-accept"><i class="bi bi-check2"></i> Accept</button></form><form action="/remove/{{ friend.user_id }}" method="post"><button type="submit" class="btn-decline" aria-label="Decline request"><i class="bi bi-x-lg"></i></button></form></div></article>{% else %}<div class="empty-state compact-empty"><span class="empty-icon"><i class="bi bi-person-check"></i></span><h3>All caught up</h3><p>You don't have any pending friend requests.</p></div>{% endfor %}</div></section>
-<section class="profile-section profile-posts-section"><div class="section-heading-row"><div><span class="eyebrow">YOUR SHARED MOMENTS</span><h2>My posts</h2></div><a href="/posts" class="btn-primary-soft"><i class="bi bi-plus-lg"></i> New post</a></div>
-<div class="feed-grid">{% for d in getallmypost|reverse %}<article class="post-card"><div class="post-card-header"><div class="post-author-avatar">{{ current_user.first_name[:1]|upper }}</div><div class="post-author"><strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong><small><i class="bi bi-clock"></i> {{ d.date }} · {{ d.time }}</small></div></div><div class="post-copy"><h3>{{ d.title }}</h3><p>{{ d.description }}</p></div>{% if d.image %}<div class="post-image-wrap"><img src="{{ upload_url(d.image) }}" alt="{{ d.title }}" class="post-image" loading="lazy" onerror="this.closest('.post-image-wrap').hidden=true;"></div>{% endif %}<div class="post-stats"><span><i class="bi bi-heart-fill"></i> {{ like_counts[d.post_id] }} likes</span><a href="/viewcomment/{{ d.post_id }}">View comments</a></div><div class="post-actions"><form action="/like/{{ d.post_id }}" method="post" class="inline-action-form"><button type="submit" class="post-action {{ 'is-liked' if d.post_id in liked_post_ids else '' }}"><i class="bi {{ 'bi-heart-fill' if d.post_id in liked_post_ids else 'bi-heart' }}"></i> {{ 'Unlike' if d.post_id in liked_post_ids else 'Like' }}</button></form><a href="/viewcomment/{{ d.post_id }}" class="post-action"><i class="bi bi-chat"></i> Comments</a></div><form action="/comment/{{ d.post_id }}" method="post" class="comment-form"><input type="hidden" name="commented" value="{{ current_user.first_name }} {{ current_user.last_name }}"><input name="comment" class="form-control" placeholder="Write a comment…" aria-label="Write a comment" required><button type="submit" aria-label="Post comment"><i class="bi bi-send-fill"></i></button></form></article>{% else %}<div class="empty-state compact-empty"><span class="empty-icon"><i class="bi bi-images"></i></span><h3>No posts yet</h3><p>Your shared moments will appear here.</p><a href="/posts" class="btn-primary-soft">Create your first post</a></div>{% endfor %}</div></section>
-{% endblock body %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6658e8">
+  <meta name="description" content="Your SocialNest profile, connections and shared moments.">
+  <title>My profile · SocialNest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="/static/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="/static/assets/css/main.css" rel="stylesheet">
+</head>
+<body class="socialnest-app profile-page-body">
+<header id="header" class="header app-header">
+  <div class="app-nav container-fluid container-xl">
+    <a href="/" class="brand" aria-label="SocialNest home"><span class="brand-mark"><i class="bi bi-people-fill"></i></span><span>Social<span>Nest</span></span></a>
+    <nav id="navmenu" class="navmenu app-navmenu" aria-label="Main navigation">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/posts">Create post</a></li>
+        <li><a href="/connect">Discover</a></li>
+        <li><a href="/about">About</a></li>
+        {% if current_user.is_authenticated %}
+        <li><a class="active" href="/profile">My profile</a></li>
+        <li class="nav-user"><span class="nav-avatar">{{ current_user.first_name[:1]|upper }}</span><span>Hi, {{ current_user.first_name }}</span></li>
+        <li><form action="/logout" method="post" class="nav-logout-form"><button class="nav-logout" type="submit">Log out</button></form></li>
+        {% else %}
+        <li><a class="nav-login" href="/login">Log in</a></li>
+        <li><a class="nav-cta" href="/signup">Join SocialNest</a></li>
+        {% endif %}
+      </ul>
+      <button class="mobile-nav-toggle d-xl-none" type="button" aria-label="Open navigation menu" aria-expanded="false"><i class="bi bi-list"></i></button>
+    </nav>
+  </div>
+</header>
+
+<main class="profile-page">
+  <div class="profile-shell">
+    <section class="profile-intro">
+      <span class="eyebrow"><span class="eyebrow-dot"></span> YOUR PEOPLE. YOUR SPACE.</span>
+      <h1>Your corner of <span>SocialNest.</span></h1>
+      <p>Your profile, your connections and everything you've shared.</p>
+    </section>
+
+    <section class="profile-summary-card">
+      {% if userdata.profileimage %}
+      <img src="{{ upload_url(userdata.profileimage) }}" alt="Profile picture" class="profile-large-avatar" onerror="this.onerror=null;this.src='{{ url_for('static', filename='assets/img/default-profile.jpg') }}';">
+      {% else %}
+      <img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}" alt="Default profile picture" class="profile-large-avatar">
+      {% endif %}
+      <div class="profile-summary-info">
+        <span class="profile-kicker">YOUR PROFILE</span>
+        <h2>{{ userdata.first_name }} {{ userdata.last_name }}</h2>
+        <p><i class="bi bi-envelope"></i> <span>{{ userdata.email }}</span></p>
+        <p><i class="bi bi-telephone"></i> <span>{{ userdata.phone }}</span></p>
+      </div>
+      <a href="/editprofile/{{ userdata.user_id }}" class="btn-primary-soft profile-edit-btn"><i class="bi bi-pencil"></i> Edit profile</a>
+    </section>
+
+    {% include 'messages.html' %}
+
+    <section class="profile-panel profile-requests-section">
+      <div class="section-heading-row">
+        <div><span class="eyebrow">YOUR COMMUNITY</span><h2>Friend requests <span>({{ myids|length }})</span></h2></div>
+        <a href="/connect" class="text-link">Discover people <i class="bi bi-arrow-right"></i></a>
+      </div>
+      <div class="request-grid">
+        {% for friend in myids %}
+        <article class="request-card">
+          {% if friend.profileimage %}
+          <img src="{{ upload_url(friend.profileimage) }}" alt="{{ friend.first_name }}" class="request-avatar" onerror="this.onerror=null;this.src='{{ url_for('static', filename='assets/img/default-profile.jpg') }}';">
+          {% else %}
+          <img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}" alt="Default profile" class="request-avatar">
+          {% endif %}
+          <strong>{{ friend.first_name }} {{ friend.last_name }}</strong>
+          <small>Sent you a friend request</small>
+          <div class="request-actions">
+            <form action="/accept/{{ friend.user_id }}" method="post"><button type="submit" class="btn-accept"><i class="bi bi-check2"></i> Accept</button></form>
+            <form action="/remove/{{ friend.user_id }}" method="post"><button type="submit" class="btn-decline" aria-label="Decline request"><i class="bi bi-x-lg"></i></button></form>
+          </div>
+        </article>
+        {% else %}
+        <div class="empty-state compact-empty"><span class="empty-icon"><i class="bi bi-person-check"></i></span><h3>All caught up</h3><p>You don't have any pending friend requests.</p></div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="profile-panel profile-posts-section">
+      <div class="section-heading-row">
+        <div><span class="eyebrow">YOUR SHARED MOMENTS</span><h2>My posts</h2></div>
+        <a href="/posts" class="btn-primary-soft"><i class="bi bi-plus-lg"></i> New post</a>
+      </div>
+      <div class="feed-grid">
+        {% for d in getallmypost|reverse %}
+        <article class="post-card">
+          <div class="post-card-header">
+            <div class="post-author-avatar">{{ current_user.first_name[:1]|upper }}</div>
+            <div class="post-author"><strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong><small><i class="bi bi-clock"></i> {{ d.date }} · {{ d.time }}</small></div>
+          </div>
+          <div class="post-copy"><h3>{{ d.title }}</h3><p>{{ d.description }}</p></div>
+          {% if d.image %}<div class="post-image-wrap"><img src="{{ upload_url(d.image) }}" alt="{{ d.title }}" class="post-image" loading="lazy" onerror="this.closest('.post-image-wrap').hidden=true;"></div>{% endif %}
+          <div class="post-stats"><span><i class="bi bi-heart-fill"></i> {{ like_counts[d.post_id] }} likes</span><a href="/viewcomment/{{ d.post_id }}">View comments</a></div>
+          <div class="post-actions">
+            <form action="/like/{{ d.post_id }}" method="post" class="inline-action-form"><button type="submit" class="post-action {{ 'is-liked' if d.post_id in liked_post_ids else '' }}"><i class="bi {{ 'bi-heart-fill' if d.post_id in liked_post_ids else 'bi-heart' }}"></i> {{ 'Unlike' if d.post_id in liked_post_ids else 'Like' }}</button></form>
+            <a href="/viewcomment/{{ d.post_id }}" class="post-action"><i class="bi bi-chat"></i> Comments</a>
+          </div>
+          <form action="/comment/{{ d.post_id }}" method="post" class="comment-form"><input name="comment" class="form-control" placeholder="Write a comment…" aria-label="Write a comment" required><button type="submit" aria-label="Post comment"><i class="bi bi-send-fill"></i></button></form>
+        </article>
+        {% else %}
+        <div class="empty-state compact-empty"><span class="empty-icon"><i class="bi bi-images"></i></span><h3>No posts yet</h3><p>Your shared moments will appear here.</p><a href="/posts" class="btn-primary-soft">Create your first post</a></div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="app-footer"><div class="container"><span>© 2026 <strong>SocialNest</strong></span><span>Made for meaningful connections.</span></div></footer>
+<script src="/static/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/js/main.js"></script>
+</body>
+</html>
