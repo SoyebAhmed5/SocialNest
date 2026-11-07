@@ -1,35 +1,64 @@
-/* SocialNest navigation and small progressive enhancements. */
+/* SocialNest responsive navigation */
 (() => {
   "use strict";
 
-  const nav = document.querySelector("#navmenu");
-  const toggle = document.querySelector(".mobile-nav-toggle");
-  const links = nav ? nav.querySelector("ul") : null;
+  const nav = document.querySelector("#navmenu.app-navmenu");
+  if (!nav) return;
 
-  if (toggle && links) {
-    toggle.addEventListener("click", () => {
-      const isOpen = links.classList.toggle("navmenu-active");
-      toggle.setAttribute("aria-expanded", String(isOpen));
-      const icon = toggle.querySelector("i");
-      if (icon) icon.className = isOpen ? "bi bi-x-lg" : "bi bi-list";
-    });
+  const toggle = nav.querySelector(".mobile-nav-toggle");
+  const menu = nav.querySelector(":scope > ul");
+  if (!toggle || !menu) return;
 
-    links.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", () => {
-        links.classList.remove("navmenu-active");
-        toggle.setAttribute("aria-expanded", "false");
-        const icon = toggle.querySelector("i");
-        if (icon) icon.className = "bi bi-list";
-      });
-    });
+  const isMobile = () => window.matchMedia("(max-width: 1199px)").matches;
 
-    document.addEventListener("click", (event) => {
-      if (!nav.contains(event.target)) {
-        links.classList.remove("navmenu-active");
-        toggle.setAttribute("aria-expanded", "false");
-        const icon = toggle.querySelector("i");
-        if (icon) icon.className = "bi bi-list";
-      }
+  const closeMenu = () => {
+    nav.classList.remove("is-open");
+    menu.classList.remove("navmenu-active");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "Open navigation menu");
+    const icon = toggle.querySelector("i");
+    if (icon) icon.className = "bi bi-list";
+  };
+
+  const openMenu = () => {
+    nav.classList.add("is-open");
+    menu.classList.add("navmenu-active");
+    toggle.setAttribute("aria-expanded", "true");
+    toggle.setAttribute("aria-label", "Close navigation menu");
+    const icon = toggle.querySelector("i");
+    if (icon) icon.className = "bi bi-x-lg";
+  };
+
+  toggle.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (nav.classList.contains("is-open")) closeMenu();
+    else openMenu();
+  });
+
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      if (isMobile()) closeMenu();
     });
-  }
+  });
+
+  menu.querySelectorAll("form").forEach((form) => {
+    form.addEventListener("submit", closeMenu);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (isMobile() && nav.classList.contains("is-open") && !nav.contains(event.target)) {
+      closeMenu();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeMenu();
+  });
+
+  window.addEventListener("resize", () => {
+    if (!isMobile()) closeMenu();
+  });
+
+  closeMenu();
 })();

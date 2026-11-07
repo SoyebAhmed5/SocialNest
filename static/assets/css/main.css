@@ -1953,3 +1953,335 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .social-button { flex: 1 1 100%; }
   .comment-meta { flex-wrap: wrap; }
 }
+
+
+
+/* ==========================================================
+   Responsive navigation + profile layout (targeted fix)
+   ========================================================== */
+
+/* Keep the header and menu above page content without clipping. */
+.socialnest-app .app-header {
+  position: sticky;
+  top: 0;
+  z-index: 3000;
+  overflow: visible;
+}
+.socialnest-app .app-nav {
+  position: relative;
+  width: 100%;
+  min-height: 76px;
+}
+.socialnest-app .app-navmenu {
+  position: relative;
+  margin-left: auto;
+  min-width: 0;
+}
+.socialnest-app .app-navmenu > ul {
+  list-style: none;
+}
+
+/* Profile page must use the full content width instead of the
+   two-column authentication form layout. */
+.socialnest-app .profile-main {
+  overflow: visible;
+  min-height: calc(100vh - 132px);
+  padding: 46px 0 72px;
+}
+.socialnest-app .profile-main > .auth-container {
+  display: block !important;
+  width: min(100% - 40px, 1120px) !important;
+  max-width: 1120px !important;
+  margin-inline: auto;
+}
+.socialnest-app .profile-main .auth-intro {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto 30px;
+}
+.socialnest-app .profile-main .auth-content {
+  width: 100%;
+  max-width: none !important;
+  margin: 0;
+}
+.socialnest-app .profile-main .profile-summary-card {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid var(--sn-line);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 10px 32px rgba(38,34,85,.06);
+}
+.socialnest-app .profile-main .profile-summary-info {
+  flex: 1 1 220px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.socialnest-app .profile-main .profile-summary-info h2 {
+  overflow-wrap: anywhere;
+}
+.socialnest-app .profile-main .profile-edit-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.socialnest-app .profile-main .profile-section {
+  width: 100%;
+  min-width: 0;
+  margin-top: clamp(28px, 4vw, 44px);
+  overflow: visible;
+}
+.socialnest-app .profile-main .section-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  margin-bottom: 18px;
+}
+.socialnest-app .profile-main .section-heading-row > * {
+  min-width: 0;
+}
+.socialnest-app .profile-main .section-heading-row h2 {
+  margin: 5px 0 0;
+  font-size: clamp(21px, 2.5vw, 27px);
+  overflow-wrap: anywhere;
+}
+.socialnest-app .profile-main .request-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  align-items: stretch;
+  gap: 16px;
+  width: 100%;
+}
+.socialnest-app .profile-main .request-card {
+  width: 100%;
+  min-width: 0;
+  min-height: 190px;
+  padding: 22px 16px;
+  overflow-wrap: anywhere;
+}
+.socialnest-app .profile-main .request-actions {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.socialnest-app .profile-main .feed-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 20px;
+  width: 100%;
+}
+.socialnest-app .profile-main .post-card {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  overflow: hidden;
+}
+.socialnest-app .profile-main .post-copy,
+.socialnest-app .profile-main .post-author {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.socialnest-app .profile-main .post-image-wrap {
+  width: 100%;
+  min-width: 0;
+}
+.socialnest-app .profile-main .post-image {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 420px;
+  object-fit: contain;
+}
+.socialnest-app .profile-main .comment-form {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  gap: 8px;
+}
+.socialnest-app .profile-main .comment-form .form-control {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.socialnest-app .profile-main .comment-form button {
+  flex: 0 0 42px;
+}
+
+/* Tablet and mobile navigation: reliable visible toggle + dropdown panel. */
+@media (max-width: 1199px) {
+  .socialnest-app .app-nav {
+    min-height: 68px;
+    gap: 12px;
+  }
+  .socialnest-app .app-navmenu {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 48px;
+  }
+  .socialnest-app .app-navmenu > .mobile-nav-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #e9e7f8;
+    border-radius: 12px;
+    background: #f7f6ff;
+    color: #5143d2 !important;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    position: relative;
+    z-index: 3002;
+  }
+  .socialnest-app .app-navmenu > ul {
+    display: none !important;
+    position: absolute !important;
+    top: calc(100% + 12px) !important;
+    right: 0 !important;
+    left: auto !important;
+    inset: auto 0 auto auto !important;
+    width: min(360px, calc(100vw - 28px));
+    max-height: min(72vh, 620px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 4px !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    border: 1px solid #e9e7f8 !important;
+    border-radius: 17px !important;
+    background: #fff !important;
+    box-shadow: 0 22px 55px rgba(31,27,78,.18) !important;
+    z-index: 3001 !important;
+  }
+  .socialnest-app .app-navmenu.is-open > ul,
+  .socialnest-app .app-navmenu > ul.navmenu-active {
+    display: flex !important;
+  }
+  .socialnest-app .app-navmenu > ul > li {
+    display: flex !important;
+    width: 100%;
+    min-width: 0;
+    padding: 0 !important;
+  }
+  .socialnest-app .app-navmenu > ul > li > a {
+    display: flex;
+    width: 100%;
+    min-height: 43px;
+    justify-content: flex-start;
+    padding: 11px 13px !important;
+    border-radius: 10px;
+    color: #55566e !important;
+    font-size: 14px !important;
+    white-space: normal;
+  }
+  .socialnest-app .app-navmenu > ul > li > a:hover,
+  .socialnest-app .app-navmenu > ul > li > a.active {
+    color: #5143d2 !important;
+    background: #f2f0ff !important;
+  }
+  .socialnest-app .app-navmenu > ul > li > a.nav-cta {
+    justify-content: center;
+    color: #fff !important;
+    background: #6658e8 !important;
+  }
+  .socialnest-app .app-navmenu .nav-user {
+    display: flex;
+    min-height: 44px;
+    padding: 8px 12px !important;
+    border-top: 1px solid #f0eff7;
+    color: #55566e;
+  }
+  .socialnest-app .app-navmenu .nav-logout-form {
+    width: 100%;
+  }
+  .socialnest-app .app-navmenu .nav-logout {
+    display: flex;
+    width: 100%;
+    min-height: 43px;
+    align-items: center;
+    padding: 11px 13px;
+    border-radius: 10px;
+    text-align: left;
+  }
+}
+@media (min-width: 1200px) {
+  .socialnest-app .app-navmenu > .mobile-nav-toggle {
+    display: none !important;
+  }
+  .socialnest-app .app-navmenu > ul {
+    display: flex !important;
+  }
+}
+
+/* Smaller tablets: stack posts and keep profile controls in bounds. */
+@media (max-width: 760px) {
+  .socialnest-app .profile-main {
+    padding: 34px 0 52px;
+  }
+  .socialnest-app .profile-main > .auth-container {
+    width: min(100% - 28px, 1120px) !important;
+  }
+  .socialnest-app .profile-main .feed-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .socialnest-app .profile-main .section-heading-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .socialnest-app .profile-main .section-heading-row > a {
+    max-width: 100%;
+  }
+  .socialnest-app .profile-main .profile-summary-card {
+    align-items: flex-start;
+  }
+  .socialnest-app .profile-main .profile-edit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+@media (max-width: 480px) {
+  .socialnest-app .brand {
+    gap: 7px;
+    font-size: 19px;
+  }
+  .socialnest-app .brand-mark {
+    width: 35px;
+    height: 35px;
+  }
+  .socialnest-app .app-navmenu > ul {
+    right: -2px !important;
+    width: min(340px, calc(100vw - 24px));
+  }
+  .socialnest-app .profile-main > .auth-container {
+    width: min(100% - 22px, 1120px) !important;
+  }
+  .socialnest-app .profile-main .profile-summary-card {
+    gap: 12px;
+    padding: 16px;
+  }
+  .socialnest-app .profile-main .profile-large-avatar {
+    width: 66px;
+    height: 66px;
+    border-radius: 20px;
+  }
+  .socialnest-app .profile-main .profile-summary-info {
+    flex-basis: calc(100% - 82px);
+  }
+  .socialnest-app .profile-main .request-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .socialnest-app .profile-main .post-card {
+    padding: 15px;
+  }
+}
