@@ -2,5 +2,41 @@
 {% block title %}Discover people{% endblock %}
 {% block page_heading %}Good people are <span>out there.</span>{% endblock %}
 {% block page_subheading %}Discover members, send a request and grow your SocialNest circle.{% endblock %}
-{% block forms %}{% include 'messages.html' %}<div class="form-card wide-form-card"><div class="form-card-heading"><span class="form-icon"><i class="bi bi-people"></i></span><div><h2>Discover your community</h2><p>Find people to connect with.</p></div></div>
-<div class="member-list">{% for user in users %}<div class="member-row"><div class="member-avatar">{{ user.first_name[:1]|upper }}{{ user.last_name[:1]|upper }}</div><div class="member-info"><strong>{{ user.first_name }} {{ user.last_name }}</strong><small>SocialNest member</small></div><div class="member-actions"><a href="/connectfriend/{{ user.user_id }}/{{ current_user.user_id }}" class="btn-member-add"><i class="bi bi-person-plus"></i> Add</a><a href="/remove/{{ user.user_id }}/{{ current_user.user_id }}" class="btn-member-remove" aria-label="Remove request"><i class="bi bi-x-lg"></i></a></div></div>{% else %}<div class="empty-state compact-empty"><span class="empty-icon"><i class="bi bi-people"></i></span><h3>You're all caught up</h3><p>There are no other members to show right now.</p></div>{% endfor %}</div></div>{% endblock forms %}
+{% block forms %}
+{% include 'messages.html' %}
+<div class="form-card wide-form-card">
+  <div class="form-card-heading">
+    <span class="form-icon"><i class="bi bi-people"></i></span>
+    <div><h2>Discover your community</h2><p>Find people to connect with.</p></div>
+  </div>
+  <div class="member-list">
+    {% for user in users %}
+    <div class="member-row">
+      {% if user.profileimage %}
+        <img class="member-avatar member-photo" src="{{ upload_url(user.profileimage) }}" alt="{{ user.first_name }} profile picture" onerror="this.onerror=null;this.src='{{ url_for('static', filename='assets/img/default-profile.jpg') }}';">
+      {% else %}
+        <div class="member-avatar">{{ (user.first_name[:1] if user.first_name else 'S')|upper }}{{ (user.last_name[:1] if user.last_name else '')|upper }}</div>
+      {% endif %}
+      <div class="member-info"><strong>{{ user.first_name }} {{ user.last_name }}</strong><small>SocialNest member</small></div>
+      <div class="member-actions">
+        {% set status = statuses.get(user.user_id, 'none') %}
+        {% if status == 'none' %}
+          <form action="/connectfriend/{{ user.user_id }}" method="post"><button type="submit" class="btn-member-add"><i class="bi bi-person-plus"></i> Add friend</button></form>
+        {% elif status == 'sent' %}
+          <span class="relationship-pill pending"><i class="bi bi-clock"></i> Request sent</span>
+          <form action="/remove/{{ user.user_id }}" method="post"><button type="submit" class="btn-member-remove" aria-label="Cancel request"><i class="bi bi-x-lg"></i></button></form>
+        {% elif status == 'received' %}
+          <span class="relationship-pill pending">Request received</span>
+          <a href="/profile" class="btn-member-add">View request</a>
+        {% else %}
+          <span class="relationship-pill connected"><i class="bi bi-check2-circle"></i> Connected</span>
+          <form action="/remove/{{ user.user_id }}" method="post"><button type="submit" class="btn-member-remove" aria-label="Remove connection"><i class="bi bi-person-dash"></i></button></form>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+      <div class="empty-state compact-empty"><span class="empty-icon"><i class="bi bi-people"></i></span><h3>You're all caught up</h3><p>There are no other members to show right now.</p></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock forms %}

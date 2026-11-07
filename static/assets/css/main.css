@@ -1870,3 +1870,86 @@ body.socialnest-app {
   .auth-container:has(.profile-summary-card) > .auth-intro { max-width:660px;margin-bottom:28px; }
   .auth-container:has(.profile-summary-card) > .auth-content { max-width:100%; }
 }
+
+
+/* SocialNest reliability and responsive layout fixes */
+html, body { max-width: 100%; overflow-x: hidden; }
+.socialnest-app *, .socialnest-app *::before, .socialnest-app *::after { box-sizing: border-box; }
+.socialnest-app main, .socialnest-app .container, .socialnest-app .auth-container,
+.socialnest-app .auth-content, .socialnest-app .feed-grid, .socialnest-app .post-card { min-width: 0; }
+.auth-main { width: 100%; overflow: visible; }
+.auth-container { width: min(100% - 32px, 1060px); }
+.auth-content { min-width: 0; }
+.auth-page .auth-main:has(.about-modern) { display: block; overflow: visible; }
+.auth-page .auth-main:has(.about-modern) .auth-container { display: block; max-width: 1120px; }
+.auth-page .auth-main:has(.about-modern) .auth-intro { max-width: 760px; margin: 0 auto 30px; text-align: center; }
+.auth-page .auth-main:has(.about-modern) .auth-content { width: 100%; max-width: 100%; }
+.about-modern { display: grid; gap: 20px; width: 100%; }
+.about-intro-card, .about-mission, .developer-card {
+  padding: clamp(22px, 4vw, 38px); border: 1px solid rgba(255,255,255,.72);
+  border-radius: 22px; background: #fff; box-shadow: 0 18px 55px rgba(20,18,60,.12);
+}
+.about-label { display: inline-block; color: #6658e8; font-size: 10px; font-weight: 800; letter-spacing: .16em; }
+.about-intro-card h2, .about-mission h2 { margin: 8px 0 10px; color: #252442; font-size: clamp(23px, 3vw, 31px); font-weight: 800; }
+.about-intro-card p, .about-mission p, .developer-copy p { max-width: 760px; margin: 0; color: #6d6d83; line-height: 1.8; }
+.about-feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+.about-feature { min-width: 0; padding: 24px; border: 1px solid #ecebfa; border-radius: 18px; background: #fff; box-shadow: 0 8px 26px rgba(38,34,85,.045); }
+.about-feature > span { display: grid; place-items: center; width: 43px; height: 43px; margin-bottom: 14px; border-radius: 14px; color: #6658e8; background: #f0eeff; font-size: 19px; }
+.about-feature h3 { margin: 0 0 7px; color: #292844; font-size: 16px; font-weight: 800; }
+.about-feature p { margin: 0; color: #77788d; font-size: 13px; line-height: 1.7; }
+.about-mission { color: #fff; background: linear-gradient(125deg,#302b62,#6658e8); }
+.about-mission .about-label, .about-mission h2, .about-mission p { color: #fff; }
+.developer-card { display: flex; align-items: center; gap: 26px; }
+.developer-avatar { width: 126px; height: 126px; flex: none; border: 5px solid #f0eeff; border-radius: 28px; object-fit: cover; }
+.developer-copy { min-width: 0; }
+.developer-copy h2 { margin: 5px 0; color: #252442; font-size: 25px; font-weight: 800; }
+.developer-copy > p:first-of-type { margin-bottom: 10px; color: #6658e8; font-weight: 700; }
+.developer-socials { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.social-button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-width: 112px; padding: 10px 15px; border: 1px solid transparent; border-radius: 11px; font-size: 12px; font-weight: 800; transition: transform .2s ease, box-shadow .2s ease; }
+.social-button:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(25,25,55,.14); }
+.social-button i { font-size: 15px; }
+.github-social { color: #fff !important; background: #24242b; }
+.linkedin-social { color: #fff !important; background: #0a66c2; }
+.x-social { color: #fff !important; background: #111; }
+.social-button span { color: #fff !important; }
+.nav-logout-form { margin: 0; }
+.app-navmenu .nav-logout {
+  border: 0; padding: 10px 13px; border-radius: 10px; background: transparent;
+  color: #b14b65; font: 600 13px "DM Sans",sans-serif; cursor: pointer;
+}
+.app-navmenu .nav-logout:hover { color: #9d304d; background: #fff0f3; }
+.inline-action-form { display: inline-flex; margin: 0; }
+.post-action { border: 0; padding: 0; background: transparent; cursor: pointer; }
+.post-action.is-liked { color: #df527c !important; }
+.post-action.is-liked i { color: #df527c; }
+.member-photo { object-fit: cover; }
+.member-actions form, .request-actions form { margin: 0; }
+.relationship-pill { display: inline-flex; align-items: center; gap: 5px; padding: 8px 10px; border-radius: 9px; font-size: 10px; font-weight: 800; white-space: nowrap; }
+.relationship-pill.pending { color: #8b6717; background: #fff7df; }
+.relationship-pill.connected { color: #237b55; background: #e8f8f0; }
+.btn-member-add { border: 0; cursor: pointer; }
+.btn-member-remove, .btn-decline { border: 0; cursor: pointer; }
+.conversation-post { padding: 16px; margin-bottom: 14px; border-radius: 14px; background: #f8f7ff; }
+.conversation-post h3 { margin: 7px 0; color: #282744; font-size: 17px; font-weight: 800; }
+.conversation-post p { margin: 0; color: #6e6e83; font-size: 13px; line-height: 1.7; white-space: pre-line; }
+.conversation-image { display: block; max-width: 100%; max-height: 330px; margin-top: 12px; border-radius: 12px; object-fit: contain; }
+.conversation-comment-form { margin: 12px 0 18px; }
+.post-image-wrap { max-width: 100%; }
+.post-image { max-width: 100%; height: auto; object-fit: contain; }
+.profile-large-avatar, .request-avatar { background: #f1efff; }
+.navmenu-active { max-height: calc(100vh - 90px); overflow-y: auto; }
+@media (max-width: 760px) {
+  .about-feature-grid { grid-template-columns: 1fr; }
+  .developer-card { align-items: flex-start; flex-direction: column; }
+  .developer-avatar { width: 100px; height: 100px; }
+  .member-row { flex-wrap: wrap; }
+  .member-actions { width: 100%; justify-content: flex-end; }
+  .profile-section { overflow: visible; }
+}
+@media (max-width: 420px) {
+  .auth-container { width: min(100% - 22px, 1060px); }
+  .request-grid { grid-template-columns: 1fr; }
+  .member-actions { justify-content: flex-start; }
+  .social-button { flex: 1 1 100%; }
+  .comment-meta { flex-wrap: wrap; }
+}

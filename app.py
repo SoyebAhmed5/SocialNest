@@ -1,438 +1,661 @@
-from flask import Flask, redirect,render_template, request, url_for
-from flask.globals import session
-from flask_sqlalchemy import SQLAlchemy
-from flask import flash
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, login_manager, UserMixin, LoginManager, login_required, logout_user, current_user, logout_user, LoginManager
-import os
-from werkzeug.utils import secure_filename
 from datetime import datetime
-from flask_login import current_user
+import os
+import uuid
+from pathlib import Path
+
 from dotenv import load_dotenv
+from flask import (
+    Flask, abort, flash, redirect, render_template, request,
+    send_from_directory, url_for
+)
+from flask_login import (
+    LoginManager, UserMixin, current_user, login_required,
+    login_user, logout_user
+)
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import and_, func, or_
+from sqlalchemy.exc import IntegrityError
+from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 load_dotenv()
 
-# import pymysql
-# pymysql.install_as_MySQLdb()
+app = Flask(__name__)
 
+database_url = os.getenv("DATABASE_URL")
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-local_server = True
-app=Flask(__name__)
+if not database_url:
+    raise RuntimeError(
+        "DATABASE_URL is missing. Copy your original .env file into the "
+        "project root and restart the application."
+    )
 
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+if not app.config["SECRET_KEY"]:
+    raise RuntimeError("SECRET_KEY is missing from your .env file.")
 
+app.config["UPLOAD_FOLDER"] = str(Path(app.root_path) / "static" / "uploads")
+app.config["ALLOWED_EXTENSIONS"] = {"png", "jpg", "jpeg", "gif", "webp"}
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
+Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
+
+db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
-# db connection
+login_manager.login_message = "Please log in to continue."
+login_manager.login_message_category = "info"
 
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/socialmedia'
-
-
-
-
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
-
-app.secret_key = os.getenv("SECRET_KEY")
-
-
-db = SQLAlchemy(app)
-
-
-
-
-# Configuration for handling files
-app.config['UPLOAD_FOLDER']='static/uploads/'
-app.config['ALLOWED_EXTENSIONS']={'png','jpg','jpeg','gif'}
-app.config['MAX_CONTENT_LENGTH']=16*1024*1024 #16mb max upload size
-
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return Signup.query.get(int(user_id))
+# ---------------------------------------------------------------------------
+# Existing database models. Column names and table names are intentionally
+# retained so this version can use the existing SocialNest database.
+# ---------------------------------------------------------------------------
 
 class Test(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
 
-# initializing signup model
+
 class Signup(UserMixin, db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50))
-    email = db.Column(db.String(100),unique=True)
+    email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(255))
-    phone = db.Column(db.String(10),unique=True)
+    phone = db.Column(db.String(10), unique=True)
     profileimage = db.Column(db.String(500))
-    
+
     def get_id(self):
-        return self.user_id
-    
-# initializing posts model    
+        return str(self.user_id)
+
+
 class Posts(db.Model):
-    post_id= db.Column(db.Integer, primary_key=True)
-    email= db.Column(db.String(50))
-    name= db.Column(db.String(100))
-    title= db.Column(db.String(100))
-    description= db.Column(db.String(500))
-    image= db.Column(db.String(500))
-    date= db.Column(db.String(100))
-    time= db.Column(db.String(100))
-    likes= db.Column(db.Integer,nullable=True,default=0)
+    post_id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(50))
+    name = db.Column(db.String(100))
+    title = db.Column(db.String(100))
+    description = db.Column(db.String(500))
+    image = db.Column(db.String(500))
+    date = db.Column(db.String(100))
+    time = db.Column(db.String(100))
+    likes = db.Column(db.Integer, nullable=True, default=0)
 
 
-# Initializing the Comments Model
 class Comments(db.Model):
     comment_id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.Integer)
     comment = db.Column(db.String(500))
     commentedBy = db.Column(db.String(100))
-    commentedOn= db.Column(db.String(100))
+    commentedOn = db.Column(db.String(100))
 
 
 class Friends(db.Model):
     friends_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer)
-    requested_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer)       # request sender
+    requested_id = db.Column(db.Integer) # request recipient
     isAccepted = db.Column(db.String(10))
+
 
 class Contact(db.Model):
     contact_id = db.Column(db.Integer, primary_key=True)
-    email= db.Column(db.String(100))
-    description= db.Column(db.String(500))
-   
-   
+    email = db.Column(db.String(100))
+    description = db.Column(db.String(500))
+
+
 class Like(db.Model):
     __tablename__ = "likes"
-
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
     post_id = db.Column(db.Integer, nullable=False)
     __table_args__ = (
-        db.UniqueConstraint('user_id', 'post_id', name='unique_like'),
-    ) 
-    
-    
-# TEMP
+        db.UniqueConstraint("user_id", "post_id", name="unique_like"),
+    )
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    try:
+        return db.session.get(Signup, int(user_id))
+    except (TypeError, ValueError):
+        return None
+
+
+# Create only missing tables. This does not delete existing rows.
 with app.app_context():
     db.create_all()
 
-    
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def allowed_file(filename):
+    return (
+        bool(filename)
+        and "." in filename
+        and filename.rsplit(".", 1)[1].lower() in app.config["ALLOWED_EXTENSIONS"]
+    )
+
+
+def save_image(file_storage):
+    """Save an upload with a unique name; return the stored basename."""
+    if not file_storage or not file_storage.filename:
+        return None
+    if not allowed_file(file_storage.filename):
+        raise ValueError("Please upload a PNG, JPG, JPEG, GIF, or WEBP image.")
+
+    original = secure_filename(file_storage.filename)
+    extension = original.rsplit(".", 1)[1].lower()
+    filename = f"{uuid.uuid4().hex}.{extension}"
+    file_storage.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+    return filename
+
+
+def normalize_upload_name(filename):
+    """Support legacy DB values such as name.jpg, uploads/name.jpg,
+    and static/uploads/name.jpg without exposing arbitrary file paths."""
+    if not filename:
+        return None
+    normalized = str(filename).replace("\\", "/").strip()
+    for prefix in ("static/uploads/", "uploads/"):
+        if normalized.startswith(prefix):
+            normalized = normalized[len(prefix):]
+    return os.path.basename(normalized) or None
+
+
+def post_like_count(post_id):
+    return Like.query.filter_by(post_id=post_id).count()
+
+
+@app.route("/uploads/<path:filename>")
+def uploaded_file(filename):
+    safe_name = normalize_upload_name(filename)
+    if not safe_name:
+        abort(404)
+    return send_from_directory(app.config["UPLOAD_FOLDER"], safe_name)
+
+
+@app.context_processor
+def inject_image_helpers():
+    return {"upload_url": lambda value: (
+        url_for("uploaded_file", filename=normalize_upload_name(value))
+        if normalize_upload_name(value) else None
+    )}
+
+
+# ---------------------------------------------------------------------------
+# Pages and authentication
+# ---------------------------------------------------------------------------
+
 @app.route("/")
+@login_required
 def index():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login'))
-    data=Posts.query.all()
-    return render_template("index.html",data=data)
+    data = Posts.query.order_by(Posts.post_id.desc()).all()
+    liked_post_ids = {
+        row.post_id for row in Like.query.filter_by(user_id=current_user.user_id).all()
+    }
+    like_counts = {post.post_id: post_like_count(post.post_id) for post in data}
+    return render_template(
+        "index.html", data=data, liked_post_ids=liked_post_ids,
+        like_counts=like_counts
+    )
 
 
 @app.route("/about")
 def about():
     return render_template("about.html")
 
-@app.route("/signup",methods=['GET','POST'])
-def signup():
-    if request.method=='POST':
-        firstName=request.form.get("fname")
-        lastName=request.form.get("lname")
-        email=request.form.get("email")
-        phoneNumber=request.form.get("phone","").strip()
-        password=request.form.get("pass1")
-        confirmPassword=request.form.get("pass2")
-        print(firstName,lastName,email,phoneNumber,password,confirmPassword)
-        if password!=confirmPassword:
-            flash("Passwords do not match","warning")
-            return redirect(url_for('signup'))
-        
-        fetchemail=Signup.query.filter_by(email=email).first()
-        fetchphone=Signup.query.filter_by(phone=phoneNumber).first()
-        if fetchemail or fetchphone:
-            flash("User already exists","warning")
-            return redirect(url_for('signup'))
-        
-        if len(phoneNumber) != 10 or not phoneNumber.isdigit():
-            flash("Phone number must be exactly 10 digits", "warning")
-            return redirect(url_for("signup"))
-                    
-        gen_pass=generate_password_hash(password)    
-        new_user = Signup(
-                            first_name=firstName,
-                            last_name=lastName,
-                            email=email,
-                            password=gen_pass,
-                            phone=phoneNumber
-                        )
-        db.session.add(new_user)
-        db.session.commit()
 
-        flash("Signup successful !.", "success")
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        first_name = request.form.get("fname", "").strip()
+        last_name = request.form.get("lname", "").strip()
+        email = request.form.get("email", "").strip()
+        phone = request.form.get("phone", "").strip()
+        password = request.form.get("pass1", "")
+        confirm_password = request.form.get("pass2", "")
+
+        if not all((first_name, last_name, email, phone, password)):
+            flash("Please complete all required fields.", "warning")
+            return redirect(url_for("signup"))
+        if password != confirm_password:
+            flash("Passwords do not match.", "warning")
+            return redirect(url_for("signup"))
+        if len(phone) != 10 or not phone.isdigit():
+            flash("Phone number must be exactly 10 digits.", "warning")
+            return redirect(url_for("signup"))
+        if Signup.query.filter(func.lower(Signup.email) == email.lower()).first():
+            flash("An account with this email already exists.", "warning")
+            return redirect(url_for("signup"))
+        if Signup.query.filter_by(phone=phone).first():
+            flash("An account with this phone number already exists.", "warning")
+            return redirect(url_for("signup"))
+
+        user = Signup(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password=generate_password_hash(password),
+            phone=phone,
+        )
+        db.session.add(user)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("An account with these details already exists.", "warning")
+            return redirect(url_for("signup"))
+
+        flash("Your account has been created. Please log in.", "success")
         return redirect(url_for("login"))
-            
+
     return render_template("signup.html")
 
 
-@app.route("/contact",methods=['GET','POST'])
-def contact():
-    if request.method=='POST':
-        email=request.form.get("email")
-        desc=request.form.get("desc")
-        query = Contact(email=email,description=desc)
-        db.session.add(query)
-        db.session.commit()
-        flash("We will get back to you soon")
-        return render_template("contact.html") 
-    return render_template("contact.html") 
-
-
-@app.route("/login",methods=['GET','POST'])
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method=='POST':
-        email=request.form.get("email")
-        password=request.form.get("pass1")
-        user = Signup.query.filter_by(email=email).first()
-        
-        if user and check_password_hash(user.password, password):
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("pass1", "")
+        user = Signup.query.filter(
+            func.lower(Signup.email) == email.lower()
+        ).first()
+
+        if user and user.password and check_password_hash(user.password, password):
             login_user(user)
-            flash("Login successful !.","success")
-            return redirect(url_for('index'))
-        else:
-            flash("Invalid email or password","danger")
-            return redirect(url_for('login'))
+            flash("Welcome back!", "success")
+            return redirect(url_for("index"))
+
+        flash("Invalid email or password. Please check your details.", "danger")
+        return redirect(url_for("login"))
+
     return render_template("login.html")
 
 
-@app.route('/logout')
+@app.route("/logout", methods=["POST"])
 @login_required
 def logout():
     logout_user()
-    flash("Logout Success","primary")
-    return redirect(url_for('login'))
+    flash("You have been logged out.", "info")
+    return redirect(url_for("login"))
 
 
-@app.route("/test/")
-def test():
-    try:
-        sql_query = "select * from test"
-        with db.engine.begin() as conn:
-            response = conn.exec_driver_sql(sql_query).all()
-            print(response)
-            return "Database is connected"
-    except Exception as e:
-        return f"Database is not Connected, {e}"
- 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.',1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
- 
- 
-
-    
-@app.route("/posts",methods=['GET','POST'])
-def posts():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login'))
-    if request.method=="POST":
-        email=request.form['email']
-        name=request.form['name']
-        title=request.form['title']
-        description=request.form['description']
-        file=request.files['image']
-        date=datetime.now()
-        datee=date.date()
-        time=date.time()
-        
-        if file and allowed_file(file.filename):
-            # save the file in the upload folder
-            filename=secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-            
-            # write the query to save in db
-            query=Posts(email=email,name=name,title=title,description=description,image=file.filename,date=datee,time=time,)
-            db.session.add(query)
-            db.session.commit()
-            flash("Post is Uploaded","info")
-            return redirect(url_for('index'))
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        description = request.form.get("desc", "").strip()
+        if not email or not description:
+            flash("Please enter your email and message.", "warning")
         else:
-            flash("Please use 'png', 'jpg', 'jpeg', 'gif' file format","warning")
-        
-    
+            db.session.add(Contact(email=email, description=description))
+            db.session.commit()
+            flash("Thanks for reaching out. Your message has been received.", "success")
+            return redirect(url_for("contact"))
+    return render_template("contact.html")
+
+
+# ---------------------------------------------------------------------------
+# Posts, likes, and comments
+# ---------------------------------------------------------------------------
+
+@app.route("/posts", methods=["GET", "POST"])
+@login_required
+def posts():
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        image_file = request.files.get("image")
+
+        if not title or not description:
+            flash("Please add a title and description to your post.", "warning")
+            return redirect(url_for("posts"))
+        if len(title) > 100 or len(description) > 500:
+            flash("Your title or description is too long.", "warning")
+            return redirect(url_for("posts"))
+
+        try:
+            image_name = save_image(image_file) if image_file and image_file.filename else None
+        except ValueError as error:
+            flash(str(error), "warning")
+            return redirect(url_for("posts"))
+
+        now = datetime.now()
+        post = Posts(
+            email=current_user.email,
+            name=f"{current_user.first_name or ''} {current_user.last_name or ''}".strip(),
+            title=title,
+            description=description,
+            image=image_name,
+            date=now.strftime("%Y-%m-%d"),
+            time=now.strftime("%I:%M %p"),
+            likes=0,
+        )
+        db.session.add(post)
+        db.session.commit()
+        flash("Your post has been shared.", "success")
+        return redirect(url_for("index"))
+
     return render_template("posts.html")
-    
-# Logic for Likes
-@app.route('/like/<int:id>',methods=['POST','GET'])
+
+
+@app.route("/like/<int:id>", methods=["POST"])
 @login_required
 def like(id):
-    post = Posts.query.filter_by(post_id=id).first()
-
+    post = db.session.get(Posts, id)
     if not post:
-        flash("Post not found.", "danger")
-        return redirect(url_for("index"))
+        abort(404)
 
-    # Check if the current user has already liked this post
-    existing_like = Like.query.filter_by(
-        user_id=current_user.user_id,
-        post_id=id
+    existing = Like.query.filter_by(
+        user_id=current_user.user_id, post_id=id
     ).first()
 
-    if existing_like:
-        flash("You already liked this post.", "info")
-        return redirect(url_for("index"))
+    if existing:
+        db.session.delete(existing)
+        flash("Like removed.", "info")
+    else:
+        db.session.add(Like(user_id=current_user.user_id, post_id=id))
+        flash("You liked this post.", "success")
 
-    # Save the user's like
-    like = Like(
-        user_id=current_user.user_id,
-        post_id=id
-    )
+    try:
+        db.session.flush()
+        post.likes = post_like_count(id)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash("Your like could not be saved. Please try again.", "warning")
 
-    db.session.add(like)
+    return redirect(request.referrer or url_for("index"))
 
-    post.likes += 1
 
-    db.session.commit()
-
-    flash("Post liked!", "success")
-    return redirect(url_for("index"))
-
-@app.route('/comment/<int:id>',methods=['GET','POST'])
+@app.route("/comment/<int:id>", methods=["POST"])
+@login_required
 def comment(id):
-    if not current_user.is_authenticated:
-        return redirect(url_for('login'))
-    if request.method == 'POST':
-        comment = request.form['comment']
-        commentedBy = request.form['commented']
-        commentedOn = datetime.now().strftime("%I:%M %p")
-        query = Comments(post_id=id, comment=comment, commentedBy=commentedBy, commentedOn=commentedOn)
-        db.session.add(query)
+    post = db.session.get(Posts, id)
+    if not post:
+        abort(404)
+
+    comment_text = request.form.get("comment", "").strip()
+    if not comment_text:
+        flash("Please write a comment before submitting.", "warning")
+    elif len(comment_text) > 500:
+        flash("Comments must be 500 characters or fewer.", "warning")
+    else:
+        author = f"{current_user.first_name or ''} {current_user.last_name or ''}".strip()
+        new_comment = Comments(
+            post_id=id,
+            comment=comment_text,
+            commentedBy=author,
+            commentedOn=datetime.now().strftime("%b %d, %Y · %I:%M %p"),
+        )
+        db.session.add(new_comment)
         db.session.commit()
-        flash("Comment added successfully","success")
-    return redirect(url_for('index'))
+        flash("Comment added.", "success")
+
+    return redirect(request.referrer or url_for("index"))
 
 
-@app.route('/viewcomment/<int:id>',methods=['GET','POST'])
+@app.route("/viewcomment/<int:id>")
+@login_required
 def viewcomment(id):
-    post = Comments.query.filter_by(post_id=id).all()
-    return render_template("comments.html", post=post)
+    post = db.session.get(Posts, id)
+    if not post:
+        abort(404)
+    comments = Comments.query.filter_by(post_id=id).order_by(Comments.comment_id.asc()).all()
+    return render_template("comments.html", post=comments, post_item=post)
 
 
-@app.route('/connect',methods=['GET','POST'])
+# ---------------------------------------------------------------------------
+# Friend requests. Friends.user_id is the sender and requested_id is receiver.
+# ---------------------------------------------------------------------------
+
+@app.route("/connect", methods=["GET"])
+@login_required
 def connect():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login'))
-    users = Signup.query.filter(Signup.user_id != current_user.user_id).all()
-    return render_template("connect.html",users=users)
+    users = Signup.query.filter(Signup.user_id != current_user.user_id).order_by(
+        Signup.first_name.asc()
+    ).all()
+
+    statuses = {}
+    for user in users:
+        relationship = Friends.query.filter(
+            or_(
+                and_(
+                    Friends.user_id == current_user.user_id,
+                    Friends.requested_id == user.user_id,
+                ),
+                and_(
+                    Friends.user_id == user.user_id,
+                    Friends.requested_id == current_user.user_id,
+                ),
+            )
+        ).first()
+
+        if relationship:
+            if relationship.isAccepted == "True":
+                statuses[user.user_id] = "connected"
+            elif relationship.user_id == current_user.user_id:
+                statuses[user.user_id] = "sent"
+            else:
+                statuses[user.user_id] = "received"
+        else:
+            statuses[user.user_id] = "none"
+
+    return render_template("connect.html", users=users, statuses=statuses)
 
 
-@app.route("/connectfriend/<path:ids>", methods=['GET'])
-def connectFriends(ids):
-    print(ids)
-    data = ids.split("/")
-    print(data)
-    users = Signup.query.all()
-    d1 = Friends.query.filter_by(user_id=data[1]).first()
-    d2 = Friends.query.filter_by(requested_id=data[0]).first()
-    if d1 or d2:
-        flash("Friend request already sent","primary")
-        return render_template("connect.html",users=users)
-    query = Friends(user_id=data[1], requested_id=data[0], isAccepted="False")
-    db.session.add(query)
-    db.session.commit()
-    flash("Friend request sent successfully","success")
-    return render_template("connect.html",users=users)
+@app.route("/connectfriend/<int:user_id>", methods=["POST"])
+@login_required
+def connectFriends(user_id):
+    if user_id == current_user.user_id:
+        flash("You cannot send a friend request to yourself.", "warning")
+        return redirect(url_for("connect"))
 
+    target = db.session.get(Signup, user_id)
+    if not target:
+        abort(404)
 
-@app.route("/remove/<path:ids>", methods=['GET'])
-def remove(ids):
-    print(ids)
-    data = ids.split("/")
-    print(data)
-    users = Signup.query.all()
-    d1 = Friends.query.filter_by(user_id=data[1]).first()
-    d2 = Friends.query.filter_by(requested_id=data[0]).first()
-    if d1 or d2:
-        friend_request = Friends.query.filter_by(user_id=data[1],requested_id=data[0]).first()
-        if friend_request:
-            db.session.delete(friend_request)
-            db.session.commit()
-        flash("Request Cancelled", "success")
-        return render_template("connect.html", users=users)
-     
-     
-@app.route("/profile",methods=['GET','POST'])
-def profile():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login'))
-    
-    userdata = Signup.query.filter_by(email=current_user.email).first()
-    friends = Friends.query.filter_by(user_id=current_user.user_id).all()
-    getallmypost = Posts.query.filter_by(email=current_user.email).all()
-    myids = []
-    for i in friends:
-        if i.isAccepted == "False":
-            signupdata = Signup.query.filter_by(user_id=i.requested_id).first()
-            myids.append(signupdata)
-    return render_template("profile.html",userdata=userdata,myids=myids,getallmypost=getallmypost)
-
-@app.route("/editprofile/<int:id>",methods=["GET",'POST'])
-def editprofile(id):
-    if not current_user.is_authenticated:
-        return redirect(url_for('login'))
-    userdata = Signup.query.filter_by(user_id=id).first()
-    return render_template("editprofile.html",userdata=userdata)
-
-@app.route("/updateprofile/<int:id>", methods=["GET", "POST"])
-def updateprofile(id):
-    userdata = Signup.query.filter_by(email=current_user.email).first()
-
-    if request.method == "POST":
-        firstName = request.form.get("fname", "").strip()
-        lastName = request.form.get("lname", "").strip()
-        email = request.form.get("email", "").strip()
-        phoneNumber = request.form.get("phone", "").strip()
-        file = request.files.get("profileimage")
-
-        if len(phoneNumber) != 10 or not phoneNumber.isdigit():
-            flash("Please enter a 10 digit number", "warning")
-            return redirect(url_for("profile"))
-
-        # Update basic profile information
-        userdata.first_name = firstName
-        userdata.last_name = lastName
-        userdata.email = email
-        userdata.phone = phoneNumber
-
-        # Update profile image if a new one was uploaded
-        if file and file.filename and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            userdata.profileimage = filename
-
-        db.session.commit()
-
-        flash("Profile Update Success", "success")
-        return redirect(url_for("profile"))
-
-    return render_template("profile.html", userdata=userdata) 
-
-
-@app.route("/accept/<path:ids>", methods=["GET"])
-def acceptfriendrequest(ids):
-    data = ids.split("/")
-
-    friend_request = Friends.query.filter_by(
-        requested_id=data[0],
-        user_id=data[1]
+    existing = Friends.query.filter(
+        or_(
+            and_(
+                Friends.user_id == current_user.user_id,
+                Friends.requested_id == user_id,
+            ),
+            and_(
+                Friends.user_id == user_id,
+                Friends.requested_id == current_user.user_id,
+            ),
+        )
     ).first()
 
-    if friend_request:
+    if existing:
+        if existing.isAccepted == "True":
+            flash("You are already connected.", "info")
+        elif existing.user_id == user_id:
+            flash("This person has already sent you a request. Accept it from your profile.", "info")
+        else:
+            flash("Your friend request is already pending.", "info")
+        return redirect(url_for("connect"))
+
+    db.session.add(Friends(
+        user_id=current_user.user_id,
+        requested_id=user_id,
+        isAccepted="False",
+    ))
+    db.session.commit()
+    flash(f"Friend request sent to {target.first_name}.", "success")
+    return redirect(url_for("connect"))
+
+
+@app.route("/accept/<int:requester_id>", methods=["POST"])
+@login_required
+def acceptfriendrequest(requester_id):
+    friend_request = Friends.query.filter_by(
+        user_id=requester_id,
+        requested_id=current_user.user_id,
+        isAccepted="False",
+    ).first()
+
+    if not friend_request:
+        flash("That pending friend request could not be found.", "warning")
+    else:
         friend_request.isAccepted = "True"
         db.session.commit()
-        flash("Friend Request Accepted", "success")
-    else:
-        flash("Friend request not found", "warning")
+        flash("Friend request accepted.", "success")
 
     return redirect(url_for("profile"))
-    
+
+
+@app.route("/remove/<int:user_id>", methods=["POST"])
+@login_required
+def remove(user_id):
+    relationship = Friends.query.filter(
+        or_(
+            and_(
+                Friends.user_id == current_user.user_id,
+                Friends.requested_id == user_id,
+                Friends.isAccepted == "False",
+            ),
+            and_(
+                Friends.user_id == user_id,
+                Friends.requested_id == current_user.user_id,
+                Friends.isAccepted == "False",
+            ),
+            and_(
+                Friends.user_id == current_user.user_id,
+                Friends.requested_id == user_id,
+                Friends.isAccepted == "True",
+            ),
+            and_(
+                Friends.user_id == user_id,
+                Friends.requested_id == current_user.user_id,
+                Friends.isAccepted == "True",
+            ),
+        )
+    ).first()
+
+    if relationship:
+        db.session.delete(relationship)
+        db.session.commit()
+        flash("The request or connection has been removed.", "success")
+    else:
+        flash("No matching request or connection was found.", "info")
+
+    return redirect(request.referrer or url_for("connect"))
+
+
+# ---------------------------------------------------------------------------
+# Profile
+# ---------------------------------------------------------------------------
+
+@app.route("/profile")
+@login_required
+def profile():
+    userdata = db.session.get(Signup, current_user.user_id)
+
+    incoming = Friends.query.filter_by(
+        requested_id=current_user.user_id,
+        isAccepted="False",
+    ).all()
+    incoming_users = [
+        db.session.get(Signup, relation.user_id)
+        for relation in incoming
+    ]
+    incoming_users = [user for user in incoming_users if user is not None]
+
+    getallmypost = Posts.query.filter_by(email=current_user.email).order_by(
+        Posts.post_id.desc()
+    ).all()
+
+    liked_post_ids = {
+        row.post_id for row in Like.query.filter_by(user_id=current_user.user_id).all()
+    }
+    like_counts = {post.post_id: post_like_count(post.post_id) for post in getallmypost}
+
+    return render_template(
+        "profile.html",
+        userdata=userdata,
+        myids=incoming_users,
+        getallmypost=getallmypost,
+        liked_post_ids=liked_post_ids,
+        like_counts=like_counts,
+    )
+
+
+@app.route("/editprofile/<int:id>", methods=["GET"])
+@login_required
+def editprofile(id):
+    if id != current_user.user_id:
+        abort(403)
+    return render_template("editprofile.html", userdata=current_user)
+
+
+@app.route("/updateprofile/<int:id>", methods=["POST"])
+@login_required
+def updateprofile(id):
+    if id != current_user.user_id:
+        abort(403)
+
+    userdata = db.session.get(Signup, current_user.user_id)
+    first_name = request.form.get("fname", "").strip()
+    last_name = request.form.get("lname", "").strip()
+    email = request.form.get("email", "").strip()
+    phone = request.form.get("phone", "").strip()
+    image_file = request.files.get("profileimage")
+
+    if not first_name or not last_name or not email:
+        flash("Please complete your name and email.", "warning")
+        return redirect(url_for("editprofile", id=id))
+    if len(phone) != 10 or not phone.isdigit():
+        flash("Please enter a valid 10-digit phone number.", "warning")
+        return redirect(url_for("editprofile", id=id))
+
+    email_owner = Signup.query.filter(
+        func.lower(Signup.email) == email.lower(),
+        Signup.user_id != current_user.user_id,
+    ).first()
+    phone_owner = Signup.query.filter(
+        Signup.phone == phone,
+        Signup.user_id != current_user.user_id,
+    ).first()
+    if email_owner or phone_owner:
+        flash("That email or phone number is already used by another account.", "warning")
+        return redirect(url_for("editprofile", id=id))
+
+    try:
+        new_image = save_image(image_file) if image_file and image_file.filename else None
+    except ValueError as error:
+        flash(str(error), "warning")
+        return redirect(url_for("editprofile", id=id))
+
+    previous_email = userdata.email
+    userdata.first_name = first_name
+    userdata.last_name = last_name
+    userdata.email = email
+    userdata.phone = phone
+    if previous_email and previous_email != email:
+        Posts.query.filter_by(email=previous_email).update(
+            {Posts.email: email}, synchronize_session=False
+        )
+    if new_image:
+        userdata.profileimage = new_image
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash("Your profile could not be updated because those details are already in use.", "warning")
+        return redirect(url_for("editprofile", id=id))
+
+    flash("Profile updated successfully.", "success")
+    return redirect(url_for("profile"))
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")

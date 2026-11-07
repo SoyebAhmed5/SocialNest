@@ -1,202 +1,30 @@
-{% extends "auth.html" %} {% block title %}About{% endblock %} {% block forms %}
-
-<h1 class="text-center">About SocialNest</h1>
-
-<div class="card p-3 text-dark">
-  <section id="about" class="about py-5">
-    <div class="container">
-      <div class="text-center mb-5">
-        <h3>
-          Connect, Share, and Grow with a community built for meaningful
-          interactions.
-        </h3>
-      </div>
-
-      <div class="row g-4">
-        <!-- Introduction -->
-        <div class="col-lg-12">
-          <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-              <h3 class="mb-3 text-center text-dark fw-bold">Welcome!</h3>
-              <p>
-                Our platform is designed to bring people together by making it
-                easy to connect, share ideas, and interact with others. Whether
-                you're posting your thoughts, discovering new content, or
-                building friendships, we've created a space where every
-                interaction matters.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Features -->
-        <div class="col-lg-6">
-          <div class="card shadow-sm border-0 h-100">
-            <div class="card-body p-4">
-              <h4 class="mb-3 text-center text-dark fw-bold">📝 Share Your Thoughts</h4>
-              <p>
-                Create and publish posts to share your experiences, ideas,
-                photos, and daily moments with the community. Let others
-                discover and engage with your content.
-              </p>
-
-              <hr />
-
-              <h4 class="mb-3 text-center text-dark fw-bold">❤️ Like & 💬 Comment</h4>
-              <p>
-                Engage with posts by liking them and leaving comments. Join
-                conversations, support creators, and interact with content you
-                enjoy.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Friends -->
-        <div class="col-lg-6">
-          <div class="card shadow-sm border-0 h-100">
-            <div class="card-body p-4">
-              <h4 class="mb-3 text-center text-dark fw-bold">🤝 Build Your Network</h4>
-              <p>
-                Send friend requests to other users and grow your network. Once
-                your request is accepted, you'll be connected and able to
-                interact more closely with your friends.
-              </p>
-
-              <hr />
-
-              <h4 class="mb-3 text-center text-dark fw-bold">🌐 Connect with Active Members</h4>
-              <p>
-                Visit the Connect page to discover active users currently on the
-                platform. Explore profiles, meet new people, and send friend
-                requests with just one click.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Profile -->
-        <div class="col-lg-12">
-          <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-              <h3 class="mb-3 text-center text-dark fw-bold">👤 Your Personal Profile</h3>
-
-              <p>
-                Every user has a personalized profile where important
-                information is securely stored and can be updated anytime.
-              </p>
-
-              <div class="row text-center mt-4">
-                <div class="col-md-3 mb-3">
-                  <div class="p-3 bg-light rounded">
-                    <h5>📷</h5>
-                    <strong>Profile Picture</strong>
-                  </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                  <div class="p-3 bg-light rounded">
-                    <h5>📧</h5>
-                    <strong>Email Address</strong>
-                  </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                  <div class="p-3 bg-light rounded">
-                    <h5>📱</h5>
-                    <strong>Phone Number</strong>
-                  </div>
-                </div>
-
-                <div class="col-md-3 mb-3">
-                  <div class="p-3 bg-light rounded">
-                    <h5>✏️</h5>
-                    <strong>Edit Profile</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Mission -->
-        <div class="col-lg-12">
-          <div class="card bg-primary text-white border-0 shadow">
-            <div class="card-body p-5 text-center">
-              <h3 class=" text-center fw-bold">Our Mission</h3>
-              <p class="mb-0 mt-3">
-                We believe social networking should be simple, engaging, and
-                meaningful. Our mission is to create a community where everyone
-                can share ideas, connect with others, and build lasting
-                relationships through authentic interactions.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+{% extends "auth.html" %}
+{% block title %}About SocialNest{% endblock %}
+{% block page_heading %}A community built for <span>meaningful connection.</span>{% endblock %}
+{% block page_subheading %}Get to know the idea behind SocialNest and the developer who built it.{% endblock %}
+{% block forms %}
+<div class="about-modern">
+  <section class="about-intro-card">
+    <span class="about-label">OUR COMMUNITY</span>
+    <h2>Connect, share and grow.</h2>
+    <p>SocialNest is a friendly space to share everyday moments, discover people, and build meaningful connections through real conversations.</p>
   </section>
-  <!-- Developer Section -->
-  <section class="py-5 bg-light">
-    <div class="container">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body text-center p-5">
-          <h2 class="fw-bold mb-3 text-dark">Meet the Developer</h2>
-
-          <img
-            src="{{ url_for('static', filename='assets/img/profile.jpeg') }}"
-            alt="Soyeb Ahmed"
-            class="rounded-circle shadow mb-3"
-            width="150"
-            height="150" />
-
-          <h3 class="fw-bold">Soyeb Ahmed</h3>
-
-          <p class="text-muted">
-            Full-Stack Developer | AI Enthusiast | Problem Solver
-          </p>
-
-          <p class="mx-auto" style="max-width: 750px">
-            Hi! I'm <strong>Soyeb Ahmed</strong>, the developer behind this
-            platform. I enjoy building modern, scalable, and user-friendly web
-            applications that solve real-world problems. This social media
-            platform was created to provide a simple and engaging experience
-            where users can connect, share their thoughts, interact with others,
-            and build meaningful friendships through a clean and intuitive
-            interface.
-          </p>
-
-          <div class="mt-4">
-            <a
-              href="https://github.com/SoyebAhmed5"
-              target="_blank"
-              class="btn btn-dark m-2">
-              <i class="bi bi-github"></i> GitHub
-            </a>
-            <a
-              href="https://www.linkedin.com/in/soyebahmed5/"
-              target="_blank"
-              class="btn btn-primary m-2">
-              <i class="bi bi-linkedin"></i> LinkedIn
-            </a>
-
-            <a
-              href="https://x.com/Soyeb_Ahmed1"
-              target="_blank"
-              class="btn btn-dark text-white m-2">
-              <i class="bi bi-twitter-x"></i> Twitter
-            </a>
-          </div>
-
-          <hr class="my-4" />
-
-          <p class="text-muted mb-0">
-            © 2026 <strong>Made by Soyeb Ahmed</strong>
-          </p>
-        </div>
+  <div class="about-feature-grid">
+    <article class="about-feature"><span><i class="bi bi-images"></i></span><h3>Share your moments</h3><p>Publish posts, photos and thoughts with your community.</p></article>
+    <article class="about-feature"><span><i class="bi bi-chat-heart"></i></span><h3>Join conversations</h3><p>Like posts and leave comments to keep good conversations going.</p></article>
+    <article class="about-feature"><span><i class="bi bi-people"></i></span><h3>Build your circle</h3><p>Discover members and send friend requests to connect.</p></article>
+    <article class="about-feature"><span><i class="bi bi-person-badge"></i></span><h3>Make it yours</h3><p>Personalize your profile and share the details you choose.</p></article>
+  </div>
+  <section class="about-mission"><span class="about-label">OUR MISSION</span><h2>Make online connection feel more human.</h2><p>We believe social networking should be simple, welcoming and focused on the people behind every post.</p></section>
+  <section class="developer-card">
+    <img src="{{ url_for('static', filename='assets/img/profile.jpeg') }}" alt="Soyeb Ahmed" class="developer-avatar">
+    <div class="developer-copy"><span class="about-label">THE DEVELOPER</span><h2>Soyeb Ahmed</h2><p>Full-Stack Developer · AI Enthusiast · Problem Solver</p><p>I enjoy building useful, accessible web applications. SocialNest is a project focused on creating a simple and engaging place where people can share, interact and build friendships.</p>
+      <div class="developer-socials">
+        <a class="social-button github-social" href="https://github.com/SoyebAhmed5" target="_blank" rel="noopener noreferrer"><i class="bi bi-github"></i><span>GitHub</span></a>
+        <a class="social-button linkedin-social" href="https://www.linkedin.com/in/soyebahmed5/" target="_blank" rel="noopener noreferrer"><i class="bi bi-linkedin"></i><span>LinkedIn</span></a>
+        <a class="social-button x-social" href="https://x.com/Soyeb_Ahmed1" target="_blank" rel="noopener noreferrer"><i class="bi bi-twitter-x"></i><span>X</span></a>
       </div>
     </div>
   </section>
 </div>
-
 {% endblock forms %}

@@ -11,9 +11,11 @@
 <article class="post-card">
   <div class="post-card-header"><div class="post-author-avatar">{{ (d.name or 'S')[:1]|upper }}</div><div class="post-author"><strong>{{ d.name }}</strong><small><i class="bi bi-clock"></i> {{ d.date }} · {{ d.time }}</small></div><span class="post-menu-icon"><i class="bi bi-three-dots"></i></span></div>
   <div class="post-copy"><h3>{{ d.title }}</h3><p>{{ d.description }}</p></div>
-  {% if d.image %}<div class="post-image-wrap"><img src="{{ url_for('static', filename='uploads/' + d.image) }}" alt="Image shared with {{ d.title }}" class="post-image" loading="lazy"></div>{% endif %}
-  <div class="post-stats"><span><i class="bi bi-heart-fill"></i> {{ d.likes }} likes</span><a href="/viewcomment/{{ d.post_id }}">View conversation</a></div>
-  <div class="post-actions"><a href="/like/{{ d.post_id }}" class="post-action"><i class="bi bi-heart"></i> Like</a><a href="/viewcomment/{{ d.post_id }}" class="post-action"><i class="bi bi-chat"></i> Comments</a></div>
+  {% if d.image %}<div class="post-image-wrap"><img src="{{ upload_url(d.image) }}" alt="Image shared with {{ d.title }}" class="post-image" loading="lazy" onerror="this.closest('.post-image-wrap').hidden=true;"></div>{% endif %}
+  <div class="post-stats"><span><i class="bi bi-heart-fill"></i> {{ like_counts[d.post_id] }} likes</span><a href="/viewcomment/{{ d.post_id }}">View conversation</a></div>
+  <div class="post-actions"><form action="/like/{{ d.post_id }}" method="post" class="inline-action-form">
+    <button type="submit" class="post-action {{ 'is-liked' if d.post_id in liked_post_ids else '' }}"><i class="bi {{ 'bi-heart-fill' if d.post_id in liked_post_ids else 'bi-heart' }}"></i> {{ 'Unlike' if d.post_id in liked_post_ids else 'Like' }}</button>
+  </form><a href="/viewcomment/{{ d.post_id }}" class="post-action"><i class="bi bi-chat"></i> Comments</a></div>
   {% if current_user.is_authenticated %}<form action="/comment/{{ d.post_id }}" method="post" class="comment-form"><input type="hidden" name="commented" value="{{ current_user.first_name }} {{ current_user.last_name }}"><input name="comment" class="form-control" placeholder="Write a thoughtful comment…" aria-label="Write a comment" required><button type="submit" aria-label="Post comment"><i class="bi bi-send-fill"></i></button></form>{% else %}<p class="login-prompt"><a href="/login">Log in</a> to like and comment.</p>{% endif %}
 </article>
 {% endfor %}
